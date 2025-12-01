@@ -12,7 +12,14 @@ fn main() {
         create_wezterm_symlink_shell();
     } else {
         println!("WezTerm is not installed, skipping wezterm config symlink creation.");
-        return;
+    }
+
+    // create theme symlink for oh-my-zsh if installed
+    if is_oh_my_zsh_installed() {
+        println!("oh-my-zsh is installed, creating symlink for stefc theme...");
+        create_oh_my_zsh_symlink();
+    } else {
+        println!("oh-my-zsh is not installed, skipping theme symlink creation.");
     }
 }
 
@@ -81,6 +88,48 @@ fn create_wezterm_symlink_shell() {
     
     if output.status.success() {
         println!("Symlink created successfully");
+    } else {
+        eprintln!("Command failed with exit code: {:?}", output.status.code());
+    }
+}
+
+fn is_oh_my_zsh_installed() -> bool {
+    if let Some(home) = env::var_os("HOME") {
+        let mut path = std::path::PathBuf::from(home);
+        path.push(".oh-my-zsh");
+        return path.exists();
+    }
+    false
+}
+
+fn create_oh_my_zsh_symlink() {
+    // Ensure themes directory exists and create symlink to the stefc theme
+    let command = "mkdir -p ~/.oh-my-zsh/themes && ln -fsv $(pwd)/config/stefc.zsh-theme ~/.oh-my-zsh/themes/stefc.zsh-theme";
+
+    println!("Executing: sh -c \"{}\"", command);
+
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .expect("Failed to execute command");
+
+    // Print stdout
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    if !stdout.is_empty() {
+        let stdout_str = replace_home_with_tilde(stdout.to_string());
+        print!("{}", stdout_str);
+    }
+
+    // Print stderr
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    if !stderr.is_empty() {
+        let stderr_str = replace_home_with_tilde(stderr.to_string());
+        eprint!("{}", stderr_str);
+    }
+
+    if output.status.success() {
+        println!("Theme symlink created successfully");
     } else {
         eprintln!("Command failed with exit code: {:?}", output.status.code());
     }
