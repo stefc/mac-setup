@@ -1,9 +1,9 @@
-use std::process::Command;
 use std::env;
-use std::fmt;
 
 mod detectors;
 use detectors::{AppDetector, WezTermDetector, OhMyZshDetector};
+mod symlinks;
+use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
 
 // ============================================================================
 // SOLID Principles Application:
@@ -14,88 +14,11 @@ use detectors::{AppDetector, WezTermDetector, OhMyZshDetector};
 // D - Dependency Inversion: Depend on abstractions, not concretions
 // ============================================================================
 
-/// Custom error type for setup operations
-#[derive(Debug)]
-enum SetupError {
-    CommandFailed { command: String, exit_code: Option<i32> },
-    #[allow(dead_code)]
-    EnvVarMissing(String),
-    IoError(String),
-}
-
-impl fmt::Display for SetupError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SetupError::CommandFailed { command, exit_code } => {
-                write!(f, "Command failed: '{}' (exit code: {:?})", command, exit_code)
-            }
-            SetupError::EnvVarMissing(var) => write!(f, "Environment variable missing: {}", var),
-            SetupError::IoError(msg) => write!(f, "IO error: {}", msg),
-        }
-    }
-}
-
-type SetupResult<T> = Result<T, SetupError>;
+// Display is still used for error printing; types now imported from symlinks module
 
 // detectors are defined in src/detectors/mod.rs and re-exported here
 
-/// Configuration for a symlink setup task
-#[derive(Clone)]
-struct SymlinkConfig {
-    source: String,
-    destination: String,
-    installer_name: String,
-    success_message: String,
-}
-
-/// Trait for creating symlinks (Single Responsibility, Dependency Inversion)
-trait SymlinkCreator {
-    fn create(&self, config: &SymlinkConfig) -> SetupResult<()>;
-}
-
-/// Default implementation of SymlinkCreator using shell commands
-struct ShellSymlinkCreator;
-
-impl SymlinkCreator for ShellSymlinkCreator {
-    fn create(&self, config: &SymlinkConfig) -> SetupResult<()> {
-        let command = format!(
-            "mkdir -p $(dirname {}) && ln -fsv {} {}",
-            config.destination, config.source, config.destination
-        );
-
-        println!("Executing: sh -c \"{}\"", command);
-
-        let output = Command::new("sh")
-            .arg("-c")
-            .arg(&command)
-            .output()
-            .map_err(|e| SetupError::IoError(e.to_string()))?;
-
-        // Print stdout
-        if !output.stdout.is_empty() {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            let formatted = replace_home_with_tilde(stdout.to_string());
-            print!("{}", formatted);
-        }
-
-        // Print stderr
-        if !output.stderr.is_empty() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let formatted = replace_home_with_tilde(stderr.to_string());
-            eprint!("{}", formatted);
-        }
-
-        if output.status.success() {
-            println!("{}", config.success_message);
-            Ok(())
-        } else {
-            Err(SetupError::CommandFailed {
-                command,
-                exit_code: output.status.code(),
-            })
-        }
-    }
-}
+// Symlink-related types and implementations moved to symlinks module
 
 /// Orchestrates setup tasks (Single Responsibility, Dependency Inversion)
 struct SetupOrchestrator<C: SymlinkCreator> {
