@@ -2,23 +2,19 @@ use std::env;
 
 mod detectors;
 use detectors::{AppDetector, WezTermDetector, OhMyZshDetector};
+mod common;
+use common::replace_home_with_tilde;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
 
-// ============================================================================
-// SOLID Principles Application:
-// S - Single Responsibility: Each trait/struct has one reason to change
-// O - Open/Closed: Traits allow extending without modifying existing code
-// L - Liskov Substitution: Implementors are substitutable for their traits
-// I - Interface Segregation: Small, focused trait interfaces
-// D - Dependency Inversion: Depend on abstractions, not concretions
-// ============================================================================
+fn main() {
+    let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
 
-// Display is still used for error printing; types now imported from symlinks module
-
-// detectors are defined in src/detectors/mod.rs and re-exported here
-
-// Symlink-related types and implementations moved to symlinks module
+    if let Err(e) = orchestrator.run() {
+        eprintln!("Setup failed: {}", e);
+        std::process::exit(1);
+    }
+}
 
 /// Orchestrates setup tasks (Single Responsibility, Dependency Inversion)
 struct SetupOrchestrator<C: SymlinkCreator> {
@@ -74,25 +70,6 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
 
         Ok(())
     }
-}
-
-fn main() {
-    let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
-
-    if let Err(e) = orchestrator.run() {
-        eprintln!("Setup failed: {}", e);
-        std::process::exit(1);
-    }
-}
-
-/// Helper function to replace home directory path with tilde
-fn replace_home_with_tilde(path_str: String) -> String {
-    if let Some(home_dir) = env::var_os("HOME") {
-        if let Some(home_str) = home_dir.to_str() {
-            return path_str.replace(home_str, "~");
-        }
-    }
-    path_str
 }
 
 /// Print current working directory with tilde substitution

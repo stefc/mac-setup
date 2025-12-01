@@ -1,10 +1,8 @@
+// Re-export commonly used items from the symlinks module root so callers (like main)
+// can import them from `crate::symlinks` as before.
 use std::process::Command;
-use std::env;
 use std::fmt;
-
-// Reuse the crate-level SetupResult and SetupError types by duplicating locally if needed.
-// To avoid circular dependencies on main.rs, we redefine minimal error types here and
-// convert to string errors only for IO when necessary.
+use crate::common::replace_home_with_tilde;
 
 /// Custom error type for symlink operations
 #[derive(Debug)]
@@ -84,12 +82,5 @@ impl SymlinkCreator for ShellSymlinkCreator {
     }
 }
 
-/// Helper function to replace home directory path with tilde
-fn replace_home_with_tilde(path_str: String) -> String {
-    if let Some(home_dir) = env::var_os("HOME") {
-        if let Some(home_str) = home_dir.to_str() {
-            return path_str.replace(home_str, "~");
-        }
-    }
-    path_str
-}
+
+
