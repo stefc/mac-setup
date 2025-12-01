@@ -6,6 +6,8 @@ mod common;
 use common::replace_home_with_tilde;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
+mod configurators;
+use configurators::ZshrcConfigurator;
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
@@ -66,6 +68,18 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                     config.installer_name
                 );
             }
+        }
+
+        // Configure .zshrc if it exists
+        let zshrc_configurator = ZshrcConfigurator;
+        if zshrc_configurator.exists() {
+            zshrc_configurator.configure(
+                "stefc",
+                &["z", "gh"],
+                &[("HOMEBREW_NO_AUTO_UPDATE", "1")],
+            )?;
+        } else {
+            println!(".zshrc not found, skipping zsh configuration.");
         }
 
         Ok(())
