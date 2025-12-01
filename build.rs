@@ -1,62 +1,110 @@
 use std::env;
 use std::fs;
-use std::path::Path;
 use std::io;
+use std::path::{Path, PathBuf};
 
+// SOLID reminders for this build script:
+//
+// 1. Single Responsibility Principle (SRP):
+//    - `main` handles the script's execution lifecycle and top-level errors.
+//    - `run` orchestrates the high-level steps of the build process.
+//    - `find_target_dir` is solely responsible for locating the `target` directory.
+//    - `prepare_assets` is responsible for managing all asset-related tasks.
+//    - `copy_if_newer` has the single job of conditionally copying a file.
+//
+// 2. Open/Closed Principle (OCP):
+//    - `prepare_assets` is open to extension: new assets can be added to the `ASSETS`
+//      array without modifying the logic of the functions themselves.
+//
+// By adhering to these principles, the script becomes more modular, easier to
+// understand, and safer to change.
+
+/// Main entry point for the build script.
 fn main() {
-    // Get the output directory (where the binary will be built)
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let target_dir = Path::new(&out_dir)
-        .parent()
-        .and_then(|p| p.parent())
-        .and_then(|p| p.parent())
-        .expect("Failed to find target directory");
-
-    // Create config directory in target
-    let config_dest = target_dir.join("config");
-    fs::create_dir_all(&config_dest).expect("Failed to create config directory");
-
-    // Helper: copy source -> dest only if source is newer than dest, or dest missing.
-    
-    // Copy .wezterm.lua to target/config/ only when newer
-    let source = Path::new("config/.wezterm.lua");
-    let dest = config_dest.join(".wezterm.lua");
-    println!("cargo:rerun-if-changed=config/.wezterm.lua");
-    match copy_if_newer(source, &dest) {
-        Ok(true) => println!("cargo:warning=Copied .wezterm.lua to {}", dest.display()),
-        Ok(false) => println!("cargo:warning=Skipped copying .wezterm.lua; destination is newer or source missing"),
-        Err(e) => println!("cargo:warning=Error copying .wezterm.lua: {}", e),
-    }
-
-    // Copy stefc.zsh-theme to target/config/ only when newer
-    let theme_source = Path::new("config/stefc.zsh-theme");
-    let theme_dest = config_dest.join("stefc.zsh-theme");
-    println!("cargo:rerun-if-changed=config/stefc.zsh-theme");
-    match copy_if_newer(theme_source, &theme_dest) {
-        Ok(true) => println!("cargo:warning=Copied stefc.zsh-theme to {}", theme_dest.display()),
-        Ok(false) => println!("cargo:warning=Skipped copying stefc.zsh-theme; destination is newer or source missing"),
-        Err(e) => println!("cargo:warning=Error copying stefc.zsh-theme: {}", e),
+    if let Err(err) = run() {
+        // Emit a Cargo warning for visibility and exit with a non-zero status code.
+        println!("cargo:warning=build.rs failed: {}", err);
+        std::process::exit(1);
     }
 }
 
-fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
-    if !source.exists() {
-        return Ok(false);
+/// Orchestrates the build process by calling specialized functions for each task.
+fn run() -> io::Result<()> {
+    let target_dir = find_target_dir()?;
+    prepare_assets(&target_dir)?;
+    Ok(())
+}
+
+/// Finds the Cargo `target` directory path from the `OUT_DIR` environment variable.
+/// Cargo sets `OUT_DIR` to a path like `.../target/debug/build/<pkg-name>-<hash>/out`.
+fn find_target_dir() -> io::Result<PathBuf> {
+    let out_dir = env::var("OUT_DIR")
+        .map_err(|_| io::Error::new(io::ErrorKind::Other, "OUT_DIR environment variable not set"))?;
+
+    Path::new(&out_dir)
+        .ancestors()
+        .nth(3) // Traverse up three levels: out -> build -> profile -> target
+        .map(PathBuf::from)
+        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to determine target directory from OUT_DIR"))
+}
+
+/// Prepares runtime configuration assets.
+/// It creates the destination directory and copies each asset.
+fn prepare_assets(target_dir: &Path) -> io::Result<()> {
+    // Define the destination directory for config files within the `target` folder.
+    let config_dest = target_dir.join("config");
+    fs::create_dir_all(&config_dest)?;
+
+    // List of assets to be copied from `config/` in the project root.
+    const ASSETS: &[&str] = &[".wezterm.lua", "stefc.zsh-theme"];
+
+    for &asset_name in ASSETS {
+        let source_path = Path::new("config").join(asset_name);
+        let dest_path = config_dest.join(asset_name);
+
+        // Instruct Cargo to re-run this script if the source asset changes.
+        println!("cargo:rerun-if-changed=config/{}", asset_name);
+
+        // Perform the copy and provide feedback.
+        match copy_if_newer(&source_path, &dest_path) {
+            Ok(true) => println!("cargo:warning=Copied {} to {}", asset_name, dest_path.display()),
+            Ok(false) => println!(
+                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
+                asset_name
+            ),
+            Err(e) => println!("cargo:warning=Error copying {}: {}", asset_name, e),
+        }
     }
 
+    Ok(())
+}
+
+/// Copies a file from `source` to `dest` only if the source is newer than the destination.
+///
+/// Returns `Ok(true)` if the file was copied, `Ok(false)` if skipped, and `Err` on failure.
+fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
+    if !source.exists() {
+        return Ok(false); // Nothing to do if the source doesn't exist.
+    }
+
+    // Check if a copy is necessary.
     let should_copy = if !dest.exists() {
-        true
+        true // Copy if destination doesn't exist.
     } else {
+        // Copy if source modification time is newer than destination.
         let src_meta = fs::metadata(source)?;
-        let dst_meta = fs::metadata(dest)?;
-        match (src_meta.modified(), dst_meta.modified()) {
-            (Ok(s), Ok(d)) => s > d,
-            // If we can't get modified times, default to copying to be safe
-            _ => true,
+        let dest_meta = fs::metadata(dest)?;
+        match (src_meta.modified(), dest_meta.modified()) {
+            (Ok(src_time), Ok(dest_time)) => src_time > dest_time,
+            _ => true, // Default to copying if modification times are unavailable.
         }
     };
 
     if should_copy {
+        // Ensure the parent directory of the destination exists.
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)?;
+        }
         fs::copy(source, dest)?;
         Ok(true)
     } else {
