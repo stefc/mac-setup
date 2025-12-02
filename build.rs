@@ -66,13 +66,16 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         println!("cargo:rerun-if-changed=config/{}", asset_name);
 
         // Perform the copy and provide feedback.
-        match copy_if_newer(&source_path, &dest_path) {
-            Ok(true) => println!("cargo:warning=Copied {} to {}", asset_name, dest_path.display()),
-            Ok(false) => println!(
+        let copied = copy_if_newer(&source_path, &dest_path)
+            .expect(&format!("Failed to check or copy asset {}", asset_name));
+
+        if copied {
+            println!("cargo:warning=Copied {} to {}", asset_name, dest_path.display());
+        } else {
+            println!(
                 "cargo:warning=Skipped copying {}; destination is newer or source is missing",
                 asset_name
-            ),
-            Err(e) => println!("cargo:warning=Error copying {}: {}", asset_name, e),
+            );
         }
     }
 
@@ -94,10 +97,13 @@ fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
         // Copy if source modification time is newer than destination.
         let src_meta = fs::metadata(source)?;
         let dest_meta = fs::metadata(dest)?;
-        match (src_meta.modified(), dest_meta.modified()) {
-            (Ok(src_time), Ok(dest_time)) => src_time > dest_time,
-            _ => true, // Default to copying if modification times are unavailable.
-        }
+        let src_time = src_meta
+            .modified()
+            .expect("Failed to get modification time for source");
+        let dest_time = dest_meta
+            .modified()
+            .expect("Failed to get modification time for destination");
+        src_time > dest_time
     };
 
     if should_copy {

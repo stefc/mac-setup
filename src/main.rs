@@ -88,26 +88,18 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
 
 /// Print current working directory with tilde substitution
 fn print_current_working_directory() {
-    match env::current_dir() {
-        Ok(path) => {
-            let path_str = replace_home_with_tilde(path.display().to_string());
-            println!("Current working directory: {}", path_str);
-        }
-        Err(e) => eprintln!("Failed to get current working directory: {}", e),
-    }
+    let path = env::current_dir().expect("Failed to get current working directory");
+    let path_str = replace_home_with_tilde(path.display().to_string());
+    println!("Current working directory: {}", path_str);
 }
 
 /// Print executable directory with tilde substitution
 fn print_executable_directory() {
-    match env::current_exe() {
-        Ok(exe_path) => {
-            if let Some(exe_dir) = exe_path.parent() {
-                let path_str = replace_home_with_tilde(exe_dir.display().to_string());
-                println!("Executable directory: {}", path_str);
-            } else {
-                eprintln!("Failed to get parent directory of executable");
-            }
-        }
-        Err(e) => eprintln!("Failed to get executable path: {}", e),
+    let exe_path = env::current_exe().expect("Failed to get executable path");
+    if let Some(exe_dir) = exe_path.parent() {
+        let path_str = replace_home_with_tilde(exe_dir.display().to_string());
+        println!("Executable directory: {}", path_str);
+    } else {
+        eprintln!("Failed to get parent directory of executable");
     }
 }
