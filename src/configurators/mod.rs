@@ -9,7 +9,7 @@ use crate::symlinks::SetupResult;
 /// Trait for configuration tasks
 pub trait Configurator {
     /// Returns the name of the configurator for logging
-    fn name(&self) -> &str;
+    fn name(&self) -> &'static str;
     
     /// Check if this configurator should run
     fn should_run(&self) -> bool;

@@ -171,7 +171,7 @@ impl ZshrcConfigurator {
 }
 
 impl Configurator for ZshrcConfigurator {
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "ZSH"
     }
 

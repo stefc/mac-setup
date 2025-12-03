@@ -15,7 +15,7 @@ impl AppDetector for OhMyZshDetector {
             .unwrap_or(false)
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "oh-my-zsh"
     }
 }

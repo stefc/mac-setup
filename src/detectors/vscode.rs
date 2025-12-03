@@ -9,7 +9,7 @@ impl AppDetector for VSCodeDetector {
         Path::new("/Applications/Visual Studio Code.app").exists()
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Visual Studio Code"
     }
 }

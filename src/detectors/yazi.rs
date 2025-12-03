@@ -13,7 +13,7 @@ impl AppDetector for YaziDetector {
             .unwrap_or(false)
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Yazi"
     }
 }

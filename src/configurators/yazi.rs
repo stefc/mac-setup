@@ -59,7 +59,7 @@ impl YaziConfigurator {
 }
 
 impl Configurator for YaziConfigurator {
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "Yazi"
     }
 

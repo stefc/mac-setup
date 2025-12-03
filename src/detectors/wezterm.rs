@@ -9,7 +9,7 @@ impl AppDetector for WezTermDetector {
         Path::new("/Applications/WezTerm.app").exists()
     }
 
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "WezTerm"
     }
 }
