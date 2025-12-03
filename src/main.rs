@@ -32,11 +32,17 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
         print_current_working_directory();
         print_executable_directory();
 
+        // Get the executable directory and construct config path
+        let exe_path = env::current_exe().expect("Failed to get executable path");
+        let exe_dir = exe_path.parent().expect("Failed to get executable directory");
+        let config_dir = exe_dir.join("config");
+        let config_dir_str = config_dir.display().to_string();
+
         let configs = vec![
             (
                 Box::new(WezTermDetector) as Box<dyn AppDetector>,
                 SymlinkConfig {
-                    source: "$(pwd)/config/.wezterm.lua".to_string(),
+                    source: format!("{}/.wezterm.lua", config_dir_str),
                     destination: "~/.wezterm.lua".to_string(),
                     installer_name: "WezTerm".to_string(),
                     success_message: "Symlink created successfully".to_string(),
@@ -45,7 +51,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
             (
                 Box::new(OhMyZshDetector) as Box<dyn AppDetector>,
                 SymlinkConfig {
-                    source: "$(pwd)/config/stefc.zsh-theme".to_string(),
+                    source: format!("{}/stefc.zsh-theme", config_dir_str),
                     destination: "~/.oh-my-zsh/themes/stefc.zsh-theme".to_string(),
                     installer_name: "oh-my-zsh".to_string(),
                     success_message: "Theme symlink created successfully".to_string(),
@@ -54,7 +60,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
             (
                 Box::new(VSCodeDetector) as Box<dyn AppDetector>,
                 SymlinkConfig {
-                    source: "$(pwd)/config/code.settings.json".to_string(),
+                    source: format!("{}/code.settings.json", config_dir_str),
                     destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
                     installer_name: "Visual Studio Code".to_string(),
                     success_message: "Settings symlink created successfully".to_string(),
