@@ -7,7 +7,7 @@ use common::replace_home_with_tilde;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
 mod configurators;
-use configurators::{ZshrcConfigurator, YaziConfigurator};
+use configurators::{Configurator, ZshrcConfigurator, YaziConfigurator};
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
@@ -32,12 +32,19 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
         print_current_working_directory();
         print_executable_directory();
 
-        // Configure Yazi before application detection
-        let yazi_configurator = YaziConfigurator;
-        if yazi_configurator.is_installed() {
-            yazi_configurator.configure()?;
-        } else {
-            println!("Yazi is not installed, skipping Yazi configuration.");
+        // Run configurators
+        let configurators: Vec<Box<dyn Configurator>> = vec![
+            Box::new(YaziConfigurator),
+            Box::new(ZshrcConfigurator::default()),
+        ];
+
+        for configurator in configurators {
+            if configurator.should_run() {
+                println!("{} configuration needed, configuring...", configurator.name());
+                configurator.configure()?;
+            } else {
+                println!("{} configuration not needed, skipping.", configurator.name());
+            }
         }
 
         // Get the executable directory and construct config path
@@ -100,18 +107,6 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                     config.installer_name
                 );
             }
-        }
-
-        // Configure .zshrc if it exists
-        let zshrc_configurator = ZshrcConfigurator;
-        if zshrc_configurator.exists() {
-            zshrc_configurator.configure(
-                "stefc",
-                &["z", "gh"],
-                &[("HOMEBREW_NO_AUTO_UPDATE", "1")],
-            )?;
-        } else {
-            println!(".zshrc not found, skipping zsh configuration.");
         }
 
         Ok(())

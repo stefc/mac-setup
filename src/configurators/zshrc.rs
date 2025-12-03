@@ -2,9 +2,24 @@ use std::fs;
 use std::path::PathBuf;
 use std::env;
 use crate::symlinks::{SetupResult, SetupError};
+use crate::configurators::Configurator;
 
 /// Configurator for .zshrc file
-pub struct ZshrcConfigurator;
+pub struct ZshrcConfigurator {
+    theme: String,
+    plugins: Vec<String>,
+    env_vars: Vec<(String, String)>,
+}
+
+impl Default for ZshrcConfigurator {
+    fn default() -> Self {
+        Self {
+            theme: "stefc".to_string(),
+            plugins: vec!["z".to_string(), "gh".to_string()],
+            env_vars: vec![("HOMEBREW_NO_AUTO_UPDATE".to_string(), "1".to_string())],
+        }
+    }
+}
 
 impl ZshrcConfigurator {
     /// Get the path to .zshrc in the user's home directory
@@ -19,21 +34,16 @@ impl ZshrcConfigurator {
     }
 
     /// Check if .zshrc exists
-    pub fn exists(&self) -> bool {
+    fn exists(&self) -> bool {
         Self::get_zshrc_path()
             .map(|path| path.exists())
             .unwrap_or(false)
     }
 
     /// Configure .zshrc with the specified theme, plugins, and environment variables
-    pub fn configure(&self, theme: &str, plugins: &[&str], env_vars: &[(&str, &str)]) -> SetupResult<()> {
+    fn run_configure(&self) -> SetupResult<()> {
         let zshrc_path = Self::get_zshrc_path()?;
         
-        if !zshrc_path.exists() {
-            println!(".zshrc not found at {:?}, skipping configuration.", zshrc_path);
-            return Ok(());
-        }
-
         println!("Configuring .zshrc at {:?}...", zshrc_path);
 
         // Read the current content
@@ -41,16 +51,18 @@ impl ZshrcConfigurator {
             .map_err(|e| SetupError::IoError(format!("Failed to read .zshrc: {}", e)))?;
 
         // Modify the content
-        let new_content = self.modify_zshrc_content(&content, theme, plugins, env_vars);
+        let plugins_refs: Vec<&str> = self.plugins.iter().map(|s| s.as_str()).collect();
+        let env_vars_refs: Vec<(&str, &str)> = self.env_vars.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        let new_content = self.modify_zshrc_content(&content, &self.theme, &plugins_refs, &env_vars_refs);
 
         // Write back to disk
         fs::write(&zshrc_path, new_content)
             .map_err(|e| SetupError::IoError(format!("Failed to write .zshrc: {}", e)))?;
 
         println!(".zshrc configured successfully");
-        println!("  - Theme set to: {}", theme);
-        println!("  - Plugins: {}", plugins.join(", "));
-        for (key, value) in env_vars {
+        println!("  - Theme set to: {}", self.theme);
+        println!("  - Plugins: {}", self.plugins.join(", "));
+        for (key, value) in &self.env_vars {
             println!("  - Export {}={}", key, value);
         }
 
@@ -143,5 +155,19 @@ impl ZshrcConfigurator {
             
             lines.insert(insert_pos, new_line.to_string());
         }
+    }
+}
+
+impl Configurator for ZshrcConfigurator {
+    fn name(&self) -> &str {
+        "ZSH"
+    }
+
+    fn should_run(&self) -> bool {
+        self.exists()
+    }
+
+    fn configure(&self) -> SetupResult<()> {
+        self.run_configure()
     }
 }

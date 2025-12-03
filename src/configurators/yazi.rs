@@ -1,13 +1,14 @@
 use std::process::Command;
 use crate::detectors::{AppDetector, YaziDetector};
 use crate::symlinks::{SetupResult, SetupError};
+use crate::configurators::Configurator;
 
 /// Configurator for Yazi file manager
 pub struct YaziConfigurator;
 
 impl YaziConfigurator {
     /// Check if Yazi is installed
-    pub fn is_installed(&self) -> bool {
+    fn is_installed(&self) -> bool {
         YaziDetector.is_installed()
     }
 
@@ -27,14 +28,7 @@ impl YaziConfigurator {
     }
 
     /// Configure Yazi by installing the everforest-medium theme package
-    pub fn configure(&self) -> SetupResult<()> {
-        if !self.is_installed() {
-            println!("Yazi is not installed, skipping Yazi configuration.");
-            return Ok(());
-        }
-
-        println!("Configuring Yazi...");
-        
+    fn run_configure(&self) -> SetupResult<()> {
         let package_name = "Chromium-3-Oxide/everforest-medium";
         
         // Check if the package is already installed
@@ -61,5 +55,19 @@ impl YaziConfigurator {
         println!("  - Added package: {}", package_name);
 
         Ok(())
+    }
+}
+
+impl Configurator for YaziConfigurator {
+    fn name(&self) -> &str {
+        "Yazi"
+    }
+
+    fn should_run(&self) -> bool {
+        self.is_installed()
+    }
+
+    fn configure(&self) -> SetupResult<()> {
+        self.run_configure()
     }
 }
