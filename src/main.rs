@@ -31,8 +31,13 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     fn run(&self) -> SetupResult<()> {
         print_current_working_directory();
         print_executable_directory();
+        self.run_configurators()?;
+        self.setup_symlinks()?;
 
-        // Run configurators
+        Ok(())
+    }
+
+    fn run_configurators(&self) -> SetupResult<()> {
         let configurators: Vec<Box<dyn Configurator>> = vec![
             Box::new(YaziConfigurator),
             Box::new(ZshrcConfigurator::default()),
@@ -47,6 +52,10 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
             }
         }
 
+        Ok(())
+    }
+
+    fn setup_symlinks(&self) -> SetupResult<()> {
         // Get the executable directory and construct config path
         let exe_path = env::current_exe().expect("Failed to get executable path");
         let exe_dir = exe_path.parent().expect("Failed to get executable directory");
