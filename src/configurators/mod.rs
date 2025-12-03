@@ -16,4 +16,7 @@ pub trait Configurator {
     
     /// Execute the configuration
     fn configure(&self) -> SetupResult<()>;
+
+    /// Return affected file paths for logging (tilde-expanded or user-friendly)
+    fn affected_files(&self) -> Vec<String> { Vec::new() }
 }

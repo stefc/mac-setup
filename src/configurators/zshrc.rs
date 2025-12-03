@@ -33,6 +33,18 @@ impl ZshrcConfigurator {
             .ok_or_else(|| SetupError::IoError("HOME environment variable not set".to_string()))
     }
 
+    fn zshrc_path_string_tilde() -> String {
+        if let Ok(home_str) = env::var("HOME") {
+            let mut path = PathBuf::from(&home_str);
+            path.push(".zshrc");
+            return PathBuf::from(path)
+                .display()
+                .to_string()
+                .replacen(&home_str, "~", 1);
+        }
+        "~/.zshrc".to_string()
+    }
+
     /// Check if .zshrc exists
     fn exists(&self) -> bool {
         Self::get_zshrc_path()
@@ -169,5 +181,9 @@ impl Configurator for ZshrcConfigurator {
 
     fn configure(&self) -> SetupResult<()> {
         self.run_configure()
+    }
+
+    fn affected_files(&self) -> Vec<String> {
+        vec![Self::zshrc_path_string_tilde()]
     }
 }

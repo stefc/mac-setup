@@ -33,7 +33,7 @@ impl YaziConfigurator {
         
         // Check if the package is already installed
         if self.is_package_installed(package_name) {
-            println!("Yazi package '{}' is already installed", package_name);
+            println!("Yazi configuration not needed; package '{}' already installed", package_name);
             return Ok(());
         }
         
@@ -64,10 +64,19 @@ impl Configurator for YaziConfigurator {
     }
 
     fn should_run(&self) -> bool {
-        self.is_installed()
+        if !self.is_installed() {
+            return false;
+        }
+        // Only run if required package is missing
+        !self.is_package_installed("Chromium-3-Oxide/everforest-medium")
     }
 
     fn configure(&self) -> SetupResult<()> {
         self.run_configure()
+    }
+
+    fn affected_files(&self) -> Vec<String> {
+        // Yazi configuration acts via package manager; no direct file paths affected here
+        Vec::new()
     }
 }
