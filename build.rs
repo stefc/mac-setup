@@ -3,21 +3,6 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-// SOLID reminders for this build script:
-//
-// 1. Single Responsibility Principle (SRP):
-//    - `main` handles the script's execution lifecycle and top-level errors.
-//    - `run` orchestrates the high-level steps of the build process.
-//    - `find_target_dir` is solely responsible for locating the `target` directory.
-//    - `prepare_assets` is responsible for managing all asset-related tasks.
-//    - `copy_if_newer` has the single job of conditionally copying a file.
-//
-// 2. Open/Closed Principle (OCP):
-//    - `prepare_assets` is open to extension: new assets can be added to the `ASSETS`
-//      array without modifying the logic of the functions themselves.
-//
-// By adhering to these principles, the script becomes more modular, easier to
-// understand, and safer to change.
 
 /// Main entry point for the build script.
 fn main() {
@@ -56,7 +41,7 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
     fs::create_dir_all(&config_dest)?;
 
     // List of assets to be copied from `config/` in the project root.
-    const ASSETS: &[&str] = &[".wezterm.lua", "stefc.zsh-theme"];
+    const ASSETS: &[&str] = &[".wezterm.lua", "stefc.zsh-theme", "code.settings.json"];
 
     for &asset_name in ASSETS {
         let source_path = Path::new("config").join(asset_name);

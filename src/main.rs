@@ -1,7 +1,7 @@
 use std::env;
 
 mod detectors;
-use detectors::{AppDetector, WezTermDetector, OhMyZshDetector};
+use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector};
 mod common;
 use common::replace_home_with_tilde;
 mod symlinks;
@@ -49,6 +49,15 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                     destination: "~/.oh-my-zsh/themes/stefc.zsh-theme".to_string(),
                     installer_name: "oh-my-zsh".to_string(),
                     success_message: "Theme symlink created successfully".to_string(),
+                },
+            ),
+            (
+                Box::new(VSCodeDetector) as Box<dyn AppDetector>,
+                SymlinkConfig {
+                    source: "$(pwd)/config/code.settings.json".to_string(),
+                    destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
+                    installer_name: "Visual Studio Code".to_string(),
+                    success_message: "Settings symlink created successfully".to_string(),
                 },
             ),
         ];
