@@ -69,16 +69,16 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
         ];
         let mut affected = 0usize;
         for configurator in configurators {
+            logger.info(format!("Checking {}...", configurator.name()));
+            // Use the centralized run helper which handles should_run() and skipping
+            configurator.run()?;
+            let files = configurator.affected_files();
+            for file in files {
+                logger.ok_with_highlight("Configured successfully ->".to_string(), file);
+            }
+            // Count only those that actually ran; `should_run()` is checked inside `run()`
             if configurator.should_run() {
-                logger.info(format!("{} configuration needed, configuring...", configurator.name()));
-                configurator.configure()?;
-                let files = configurator.affected_files();
-                for file in files {
-                    logger.ok_with_highlight("Configured successfully ->".to_string(), file);
-                }
                 affected += 1;
-            } else {
-                logger.info(format!("{} configuration not needed, skipping.", configurator.name()));
             }
         }
 

@@ -17,6 +17,15 @@ pub trait Configurator {
     /// Execute the configuration
     fn configure(&self) -> SetupResult<()>;
 
+    /// Default run helper: checks `should_run()` and calls `configure()`.
+    fn run(&self) -> SetupResult<()> {
+        if !self.should_run() {
+            println!("Skipping {}", self.name());
+            return Ok(());
+        }
+        self.configure()
+    }
+
     /// Return affected file paths for logging (tilde-expanded or user-friendly)
     fn affected_files(&self) -> Vec<String> { Vec::new() }
 }
