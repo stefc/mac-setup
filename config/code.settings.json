@@ -6,5 +6,5 @@
     "git.openRepositoryInParentFolders": "never",
     "github.copilot.nextEditSuggestions.enabled": true,
     "editor.fontFamily": "JetBrains Mono",
-    "editor.fontSize": 14
+    "editor.fontSize": 16
 }

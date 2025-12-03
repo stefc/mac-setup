@@ -43,9 +43,10 @@ pub struct ShellSymlinkCreator;
 
 impl SymlinkCreator for ShellSymlinkCreator {
     fn create(&self, config: &SymlinkConfig) -> SetupResult<()> {
+        let dest_escaped = config.destination.replace(" ", "\\ ");
         let command = format!(
             "mkdir -p $(dirname {}) && ln -fsv {} {}",
-            config.destination, config.source, config.destination
+            dest_escaped, config.source, dest_escaped
         );
 
         println!("Executing: sh -c \"{}\"", command);
