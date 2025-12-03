@@ -1,13 +1,13 @@
 use std::env;
 
 mod detectors;
-use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector};
+use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector};
 mod common;
 use common::replace_home_with_tilde;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
 mod configurators;
-use configurators::ZshrcConfigurator;
+use configurators::{ZshrcConfigurator, YaziConfigurator};
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
@@ -31,6 +31,14 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     fn run(&self) -> SetupResult<()> {
         print_current_working_directory();
         print_executable_directory();
+
+        // Configure Yazi before application detection
+        let yazi_configurator = YaziConfigurator;
+        if yazi_configurator.is_installed() {
+            yazi_configurator.configure()?;
+        } else {
+            println!("Yazi is not installed, skipping Yazi configuration.");
+        }
 
         // Get the executable directory and construct config path
         let exe_path = env::current_exe().expect("Failed to get executable path");
@@ -64,6 +72,15 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                     destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
                     installer_name: "Visual Studio Code".to_string(),
                     success_message: "Settings symlink created successfully".to_string(),
+                },
+            ),
+            (
+                Box::new(YaziDetector) as Box<dyn AppDetector>,
+                SymlinkConfig {
+                    source: format!("{}/yazi.theme.toml", config_dir_str),
+                    destination: "~/.config/yazi/theme.toml".to_string(),
+                    installer_name: "Yazi".to_string(),
+                    success_message: "Theme symlink created successfully".to_string(),
                 },
             ),
         ];

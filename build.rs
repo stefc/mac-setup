@@ -41,7 +41,7 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
     fs::create_dir_all(&config_dest)?;
 
     // List of assets to be copied from `config/` in the project root.
-    const ASSETS: &[&str] = &[".wezterm.lua", "stefc.zsh-theme", "code.settings.json"];
+    const ASSETS: &[&str] = &[".wezterm.lua", "stefc.zsh-theme", "code.settings.json", "yazi.theme.toml"];
 
     for &asset_name in ASSETS {
         let source_path = Path::new("config").join(asset_name);
