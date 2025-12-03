@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mac-setup",
+                    "--package=mac-setup"
+                ],
+                "filter": {
+                    "name": "mac-setup",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Run Release",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--release",
+                    "--bin=mac-setup",
+                    "--package=mac-setup"
+                ],
+                "filter": {
+                    "name": "mac-setup",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

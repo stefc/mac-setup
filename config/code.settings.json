@@ -4,7 +4,26 @@
     "git.autofetch": true,
     "git.enableSmartCommit": true,
     "git.openRepositoryInParentFolders": "never",
+  	"git.allowForcePush": true,
+	"git.confirmForcePush": false,
     "github.copilot.nextEditSuggestions.enabled": true,
     "editor.fontFamily": "JetBrains Mono",
-    "editor.fontSize": 16
+    "editor.fontSize": 16,
+    "editor.fontLigatures": true,
+    "workbench.colorTheme": "Solarized Light",
+    "files.autoSave": "afterDelay",
+    "editor.inlineSuggest.enabled": true,
+	"editor.rulers": [120],
+	"editor.showFoldingControls": "always",	
+	"editor.defaultFoldingRangeProvider": "ms-dotnettools.csdevkit",
+	"editor.wordWrapColumn": 120,
+	"editor.wordWrap": "bounded",
+	"editor.accessibilitySupport": "off",
+    "files.exclude": {
+		"**/bin": true,
+		"**/obj": true,
+        "**/.DS_Store": true,
+        "**/target": true
+	},
+    "zenMode.hideLineNumbers": true
 }
