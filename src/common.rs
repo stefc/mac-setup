@@ -1,11 +1,13 @@
 use std::env;
+use std::path::Path;
 
-/// Replace occurrences of the user's home directory with a tilde for nicer output.
-pub fn replace_home_with_tilde(path_str: String) -> String {
+/// Replaces the home directory part of a path with a tilde.
+pub fn replace_home_with_tilde(path: &Path) -> String {
     if let Some(home_dir) = env::var_os("HOME") {
-        if let Some(home_str) = home_dir.to_str() {
-            return path_str.replace(home_str, "~");
+        let home_path = Path::new(&home_dir);
+        if let Ok(stripped_path) = path.strip_prefix(home_path) {
+            return format!("~/{}", stripped_path.display());
         }
     }
-    path_str
+    path.display().to_string()
 }

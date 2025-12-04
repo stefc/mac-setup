@@ -4,7 +4,6 @@ use std::env;
 mod detectors;
 use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector};
 mod common;
-use common::replace_home_with_tilde;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
 mod configurators;
@@ -13,6 +12,7 @@ mod logging;
 use logging::{Log, MemoryLogger, render_ui};
 mod settings;
 use settings::{Platform, create_platform_settings};
+mod environment;
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
@@ -60,9 +60,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn run_with_logger(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        logger.ok_with_highlight("Detected platform ->", self.platform.as_str());
-        logger.ok_with_highlight("Current working directory ->", &current_working_directory());
-        logger.ok_with_highlight("Executable directory ->", &executable_directory());
+        environment::log_environment_info(logger, &self.platform);
 
         // Apply platform-specific system settings
         self.apply_system_settings(logger)?;
@@ -188,20 +186,6 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
 
         Ok(())
     }
-}
-
-/// Print current working directory with tilde substitution
-fn current_working_directory() -> String {
-    let path = env::current_dir().expect("Failed to get current working directory");
-    replace_home_with_tilde(path.display().to_string())
-}
-
-fn executable_directory() -> String {
-    let exe_path = env::current_exe().expect("Failed to get executable path");
-    exe_path
-        .parent()
-        .map(|p| replace_home_with_tilde(p.display().to_string()))
-        .unwrap_or_else(|| "<unknown>".to_string())
 }
 
 // logging moved to `logging` module

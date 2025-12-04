@@ -2,7 +2,6 @@
 // can import them from `crate::symlinks` as before.
 use std::process::Command;
 use std::fmt;
-use crate::common::replace_home_with_tilde;
 
 /// Custom error type for symlink operations
 #[derive(Debug)]
@@ -60,15 +59,13 @@ impl SymlinkCreator for ShellSymlinkCreator {
         // Print stdout
         if !output.stdout.is_empty() {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            let formatted = replace_home_with_tilde(stdout.to_string());
-            print!("{}", formatted);
+            print!("{}", stdout);
         }
 
         // Print stderr
         if !output.stderr.is_empty() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            let formatted = replace_home_with_tilde(stderr.to_string());
-            eprint!("{}", formatted);
+            eprint!("{}", stderr);
         }
 
         if output.status.success() {

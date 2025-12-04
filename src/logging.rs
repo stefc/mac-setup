@@ -84,7 +84,7 @@ pub fn render_ui(snapshot: &LogSnapshot, err: Option<String>) -> io::Result<()> 
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3),
-                Constraint::Min(3),
+                Constraint::Min(10),
                 Constraint::Length(1),
             ])
             .split(size);
