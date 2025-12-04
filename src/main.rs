@@ -11,8 +11,8 @@ mod configurators;
 use configurators::{Configurator, ZshrcConfigurator, YaziConfigurator};
 mod logging;
 use logging::{Log, MemoryLogger, render_ui};
-mod platform;
-use platform::{Platform, create_platform_settings};
+mod settings;
+use settings::{Platform, create_platform_settings};
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
