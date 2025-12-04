@@ -24,6 +24,16 @@ impl Platform {
             Platform::Windows => "Windows",
         }
     }
+
+    #[cfg(target_os = "macos")]
+    pub fn get_serial_number(&self) -> Option<String> {
+        use crate::settings::MacOSSettings;
+        
+        match self {
+            Platform::MacOS => MacOSSettings::get_serial_number(),
+            Platform::Linux | Platform::Windows => None,
+        }
+    }
 }
 
 impl std::fmt::Display for Platform {

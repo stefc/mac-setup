@@ -8,6 +8,12 @@ pub fn log_environment_info(logger: &mut dyn Log, platform: &Platform) {
     logger.ok_with_highlight("Detected platform ->", platform.as_str());
     logger.ok_with_highlight("Current working directory ->", &current_working_directory());
     logger.ok_with_highlight("Executable directory ->", &executable_directory());
+    
+    // Display serial number for macOS
+    if let Some(serial) = platform.get_serial_number() {
+        logger.ok_with_highlight("Serial number ->", &serial);
+    }
+    
     logger.add_group("Environment", 0); // platform, cwd, exe
 }
 

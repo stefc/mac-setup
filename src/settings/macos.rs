@@ -73,4 +73,27 @@ impl MacOSSettings {
 
         Ok(())
     }
+
+    /// Get the serial number for macOS by calling ioreg
+    pub fn get_serial_number() -> Option<String> {
+        use regex::Regex;
+        
+        let output = Command::new("ioreg")
+            .arg("-l")
+            .output()
+            .ok()?;
+        
+        if !output.status.success() {
+            return None;
+        }
+        
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        
+        // Parse the line: "IOPlatformSerialNumber" = "C02LM20FFH04"
+        let re = Regex::new(r#""IOPlatformSerialNumber"\s*=\s*"([^"]+)""#).ok()?;
+        
+        re.captures(&stdout)
+            .and_then(|cap| cap.get(1))
+            .map(|m| m.as_str().to_string())
+    }
 }
