@@ -18,7 +18,7 @@ pub trait SystemSettings {
     fn apply(&self) -> Result<(), String>;
 
     /// Get a human-readable name for this settings configuration
-    fn name(&self) -> String;
+    fn name(&self) -> &'static str;
 }
 
 /// Factory function to create platform-specific settings handler

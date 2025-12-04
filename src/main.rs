@@ -60,9 +60,9 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn run_with_logger(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        logger.info(format!("Detected platform: {}", self.platform));
-        logger.info(format!("Current working directory: {}", current_working_directory()));
-        logger.info(format!("Executable directory: {}", executable_directory()));
+        logger.info(&format!("Detected platform: {}", self.platform));
+        logger.info(&format!("Current working directory: {}", current_working_directory()));
+        logger.info(&format!("Executable directory: {}", executable_directory()));
 
         // Apply platform-specific system settings
         self.apply_system_settings(logger)?;
@@ -75,16 +75,16 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
 
     fn apply_system_settings(&self, logger: &mut dyn Log) -> SetupResult<()> {
         let settings = create_platform_settings(self.platform);
-        logger.info(format!("Applying {}...", settings.name()));
+        logger.info(&format!("Applying {}...", settings.name()));
 
         match settings.apply() {
             Ok(()) => {
-                logger.ok_with_highlight("System settings applied ->".to_string(), settings.name());
-                logger.add_group("System Settings".to_string(), 1);
+                logger.ok_with_highlight("System settings applied ->", settings.name());
+                logger.add_group("System Settings", 1);
                 Ok(())
             }
             Err(e) => {
-                logger.warn(format!("Failed to apply system settings: {}", e));
+                logger.warn(&format!("Failed to apply system settings: {}", e));
                 Ok(()) // Don't fail the entire setup if settings fail
             }
         }
@@ -97,12 +97,12 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
         ];
         let mut affected = 0usize;
         for configurator in configurators {
-            logger.info(format!("Checking {}...", configurator.name()));
+            logger.info(&format!("Checking {}...", configurator.name()));
             // Use the centralized run helper which handles should_run() and skipping
             configurator.run()?;
             let files = configurator.affected_files();
             for file in files {
-                logger.ok_with_highlight("Configured successfully ->".to_string(), file);
+                logger.ok_with_highlight("Configured successfully ->", &file);
             }
             // Count only those that actually ran; `should_run()` is checked inside `run()`
             if configurator.should_run() {
@@ -110,7 +110,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
             }
         }
 
-        logger.add_group("Configurators".to_string(), affected);
+        logger.add_group("Configurators", affected);
 
         Ok(())
     }
@@ -164,16 +164,16 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
         let mut affected = 0usize;
         for (detector, config) in configs {
             if detector.is_installed() {
-                logger.info(format!(
+                logger.info(&format!(
                     "{} is installed, creating symlink for {} config...",
                     detector.name(),
                     config.installer_name
                 ));
                 self.symlink_creator.create(&config)?;
-                logger.ok_with_highlight(format!("{} ->", config.success_message), config.destination.clone());
+                logger.ok_with_highlight(&format!("{} ->", config.success_message), &config.destination);
                 affected += 1;
             } else {
-                logger.warn(format!(
+                logger.warn(&format!(
                     "{} is not installed, skipping {} config symlink creation.",
                     detector.name(),
                     config.installer_name
@@ -181,7 +181,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
             }
         }
 
-        logger.add_group("Symlinks".to_string(), affected);
+        logger.add_group("Symlinks", affected);
 
         Ok(())
     }

@@ -13,7 +13,7 @@ impl SystemSettings for WindowsSettings {
         Ok(())
     }
 
-    fn name(&self) -> String {
-        "Windows Settings".to_string()
+    fn name(&self) -> &'static str {
+        "Windows Settings"
     }
 }

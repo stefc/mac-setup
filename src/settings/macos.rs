@@ -16,8 +16,8 @@ impl SystemSettings for MacOSSettings {
         Ok(())
     }
 
-    fn name(&self) -> String {
-        "macOS Settings".to_string()
+    fn name(&self) -> &'static str {
+        "macOS Settings"
     }
 }
 

@@ -10,10 +10,10 @@ use ratatui::Terminal;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
 pub trait Log {
-    fn info(&mut self, msg: String);
-    fn warn(&mut self, msg: String);
-    fn ok_with_highlight(&mut self, msg: String, highlight: String);
-    fn add_group(&mut self, title: String, affected_count: usize);
+    fn info(&mut self, msg: &str);
+    fn warn(&mut self, msg: &str);
+    fn ok_with_highlight(&mut self, msg: &str, highlight: &str);
+    fn add_group(&mut self, title: &str, affected_count: usize);
     fn snapshot(&self) -> LogSnapshot;
 }
 
@@ -44,18 +44,18 @@ pub enum LogLevel {
 }
 
 impl Log for MemoryLogger {
-    fn info(&mut self, msg: String) {
-        self.lines.push(LogLine { level: LogLevel::Info, msg, highlight: None });
+    fn info(&mut self, msg: &str) {
+        self.lines.push(LogLine { level: LogLevel::Info, msg: msg.to_string(), highlight: None });
     }
-    fn warn(&mut self, msg: String) {
-        self.lines.push(LogLine { level: LogLevel::Warn, msg, highlight: None });
+    fn warn(&mut self, msg: &str) {
+        self.lines.push(LogLine { level: LogLevel::Warn, msg: msg.to_string(), highlight: None });
     }
-    fn ok_with_highlight(&mut self, msg: String, highlight: String) {
-        self.lines.push(LogLine { level: LogLevel::Ok, msg, highlight: Some(highlight) });
+    fn ok_with_highlight(&mut self, msg: &str, highlight: &str) {
+        self.lines.push(LogLine { level: LogLevel::Ok, msg: msg.to_string(), highlight: Some(highlight.to_string()) });
     }
 
-    fn add_group(&mut self, title: String, affected_count: usize) {
-        self.groups.push(GroupSummary { title, affected_count });
+    fn add_group(&mut self, title: &str, affected_count: usize) {
+        self.groups.push(GroupSummary { title: title.to_string(), affected_count });
     }
 
     fn snapshot(&self) -> LogSnapshot {

@@ -13,7 +13,7 @@ impl SystemSettings for LinuxSettings {
         Ok(())
     }
 
-    fn name(&self) -> String {
-        "Linux Settings".to_string()
+    fn name(&self) -> &'static str {
+        "Linux Settings"
     }
 }
