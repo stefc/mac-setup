@@ -60,9 +60,9 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn run_with_logger(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        logger.info(&format!("Detected platform: {}", self.platform));
-        logger.info(&format!("Current working directory: {}", current_working_directory()));
-        logger.info(&format!("Executable directory: {}", executable_directory()));
+        logger.ok_with_highlight("Detected platform ->", self.platform.as_str());
+        logger.ok_with_highlight("Current working directory ->", &current_working_directory());
+        logger.ok_with_highlight("Executable directory ->", &executable_directory());
 
         // Apply platform-specific system settings
         self.apply_system_settings(logger)?;
@@ -74,6 +74,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn apply_system_settings(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        logger.info("▶ Applying System Settings");
         let settings = create_platform_settings(self.platform);
         logger.info(&format!("Applying {}...", settings.name()));
 
@@ -91,6 +92,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn run_configurators(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        logger.info("▶ Configuration");
         let configurators: Vec<Box<dyn Configurator>> = vec![
             Box::new(YaziConfigurator),
             Box::new(ZshrcConfigurator::default()),
@@ -116,6 +118,7 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
     }
 
     fn setup_symlinks(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        logger.info("▶ Create Symlinks");
         // Get the executable directory and construct config path
         let exe_path = env::current_exe().expect("Failed to get executable path");
         let exe_dir = exe_path.parent().expect("Failed to get executable directory");
