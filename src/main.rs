@@ -11,6 +11,8 @@ mod configurators;
 use configurators::{Configurator, ZshrcConfigurator, YaziConfigurator};
 mod logging;
 use logging::{Log, MemoryLogger, render_ui};
+mod platform;
+use platform::{Platform, create_platform_settings};
 
 fn main() {
     let orchestrator = SetupOrchestrator::new(ShellSymlinkCreator);
@@ -46,20 +48,46 @@ fn main() {
 /// Orchestrates setup tasks (Single Responsibility, Dependency Inversion)
 struct SetupOrchestrator<C: SymlinkCreator> {
     symlink_creator: C,
+    platform: Platform,
 }
 
 impl<C: SymlinkCreator> SetupOrchestrator<C> {
     fn new(symlink_creator: C) -> Self {
-        Self { symlink_creator }
+        Self {
+            symlink_creator,
+            platform: Platform::detect(),
+        }
     }
 
     fn run_with_logger(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        logger.info(format!("Detected platform: {}", self.platform));
         logger.info(format!("Current working directory: {}", current_working_directory()));
         logger.info(format!("Executable directory: {}", executable_directory()));
+
+        // Apply platform-specific system settings
+        self.apply_system_settings(logger)?;
+
         self.run_configurators(logger)?;
         self.setup_symlinks(logger)?;
 
         Ok(())
+    }
+
+    fn apply_system_settings(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        let settings = create_platform_settings(self.platform);
+        logger.info(format!("Applying {}...", settings.name()));
+
+        match settings.apply() {
+            Ok(()) => {
+                logger.ok_with_highlight("System settings applied ->".to_string(), settings.name());
+                logger.add_group("System Settings".to_string(), 1);
+                Ok(())
+            }
+            Err(e) => {
+                logger.warn(format!("Failed to apply system settings: {}", e));
+                Ok(()) // Don't fail the entire setup if settings fail
+            }
+        }
     }
 
     fn run_configurators(&self, logger: &mut dyn Log) -> SetupResult<()> {
