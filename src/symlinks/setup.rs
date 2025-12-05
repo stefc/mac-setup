@@ -2,7 +2,7 @@
 use crate::detectors::{
     AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector, HelixDetector,
 };
-use crate::logging::Log;
+use crate::common::Log;
 use crate::symlinks::{SetupResult, ShellSymlinkCreator, SymlinkConfig, SymlinkCreator};
 use std::env;
 

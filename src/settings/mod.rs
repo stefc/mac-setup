@@ -1,15 +1,12 @@
-pub mod platform;
 pub mod macos;
 pub mod linux;
 pub mod windows;
 
-pub use platform::Platform;
+pub use crate::common::{Platform, SetupResult, Log};
 pub use macos::MacOSSettings;
 pub use linux::LinuxSettings;
 pub use windows::WindowsSettings;
 
-use crate::logging::Log;
-use crate::symlinks::SetupResult;
 
 /// Trait for platform-specific system settings configuration
 pub trait SystemSettings {

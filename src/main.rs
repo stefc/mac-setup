@@ -4,11 +4,10 @@ mod common;
 mod configurators;
 mod detectors;
 mod environment;
-mod logging;
 mod settings;
 mod symlinks;
-use logging::{render_ui, Log, MemoryLogger};
-use settings::{apply_system_settings, Platform};
+use common::{render_ui, Log, MemoryLogger, Platform};
+use settings::apply_system_settings;
 use symlinks::{setup, SetupResult};
 
 fn main() {

@@ -4,7 +4,7 @@ pub mod yazi;
 pub use zshrc::ZshrcConfigurator;
 pub use yazi::YaziConfigurator;
 
-use crate::{symlinks::SetupResult, logging::Log};
+use crate::{symlinks::SetupResult, common::Log};
 
 /// Trait for configuration tasks
 pub trait Configurator {
