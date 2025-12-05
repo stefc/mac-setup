@@ -7,8 +7,6 @@ pub use macos::MacOSSettings;
 pub use linux::LinuxSettings;
 pub use windows::WindowsSettings;
 
-
-/// Trait for platform-specific system settings configuration
 pub trait SystemSettings {
     /// Get the platform this settings handler is for
     #[allow(dead_code)]
@@ -22,7 +20,7 @@ pub trait SystemSettings {
 }
 
 /// Factory function to create platform-specific settings handler
-pub fn create_platform_settings(platform: Platform) -> Box<dyn SystemSettings> {
+pub fn create_platform_settings(platform: &Platform) -> Box<dyn SystemSettings> {
     match platform {
         Platform::MacOS => Box::new(MacOSSettings),
         Platform::Linux => Box::new(LinuxSettings),
@@ -31,9 +29,9 @@ pub fn create_platform_settings(platform: Platform) -> Box<dyn SystemSettings> {
 }
 
 /// Apply platform-specific system settings
-pub fn apply_system_settings(logger: &mut dyn Log, platform: Platform) -> SetupResult<()> {
+pub fn apply_system_settings(logger: &mut dyn Log, platform: &Platform) -> SetupResult<()> {
     logger.info("▶ Applying System Settings");
-    let settings = create_platform_settings(platform);
+    let settings = create_platform_settings(&platform);
     logger.info(&format!("Applying {}...", settings.name()));
 
     match settings.apply() {

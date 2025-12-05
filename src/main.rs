@@ -45,7 +45,7 @@ fn execute(logger: &mut dyn Log) -> SetupResult<()> {
     environment::log_environment_info(logger, &platform);
 
     // Apply platform-specific system settings
-    apply_system_settings(logger, platform)?;
+    apply_system_settings(logger, &platform)?;
 
     configurators::run_configurators(logger)?;
     setup::setup_symlinks(logger)?;
