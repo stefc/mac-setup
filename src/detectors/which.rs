@@ -1,4 +1,3 @@
-use std::process::Command;
 use crate::detectors::app_detector::AppDetector;
 
 /// A reusable which-based detector for simple binaries
@@ -16,11 +15,11 @@ impl WhichDetector {
 
 impl AppDetector for WhichDetector {
     fn is_installed(&self) -> bool {
-        Command::new("which")
-            .arg(self.bin)
-            .output()
-            .map(|output| output.status.success())
-            .unwrap_or(false)
+        match crate::common::run_command("which", &[self.bin]) {
+            Ok(Some(_stdout)) => true,
+            Ok(None) => false,
+            Err(_) => false,
+        }
     }
 
     fn name(&self) -> &'static str {

@@ -1,6 +1,5 @@
 use crate::symlinks::SymlinkConfig;
 use crate::symlinks::SetupResult;
-use std::process::Command;
 
 /// Trait for creating symlinks
 pub trait SymlinkCreator {
@@ -18,34 +17,19 @@ impl SymlinkCreator for ShellSymlinkCreator {
             dest_escaped, config.source, dest_escaped
         );
 
-        println!("Executing: sh -c \"{}\"", command);
-
-        let output = Command::new("sh")
-            .arg("-c")
-            .arg(&command)
-            .output()
-            .map_err(|e| crate::symlinks::SetupError::IoError(e.to_string()))?;
-
-        // Print stdout
-        if !output.stdout.is_empty() {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            print!("{}", stdout);
-        }
-
-        // Print stderr
-        if !output.stderr.is_empty() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            eprint!("{}", stderr);
-        }
-
-        if output.status.success() {
-            println!("{}", config.success_message);
-            Ok(())
-        } else {
-            Err(crate::symlinks::SetupError::CommandFailed {
+        match crate::common::run_command("sh", &["-c", &command]) {
+            Ok(Some(stdout)) => {
+                if !stdout.is_empty() {
+                    print!("{}", stdout);
+                }
+                println!("{}", config.success_message);
+                Ok(())
+            }
+            Ok(None) => Err(crate::symlinks::SetupError::CommandFailed {
                 command,
-                exit_code: output.status.code(),
-            })
+                exit_code: None,
+            }),
+            Err(e) => Err(crate::symlinks::SetupError::IoError(e.to_string())),
         }
     }
 }

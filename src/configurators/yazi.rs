@@ -1,4 +1,3 @@
-use std::process::Command;
 use crate::detectors::{YaziDetector, app_detector::AppDetector};
 use crate::symlinks::{SetupResult, SetupError};
 use crate::configurators::Configurator;
@@ -14,17 +13,10 @@ impl YaziConfigurator {
 
     /// Check if a Yazi package is already installed
     fn is_package_installed(&self, package_name: &str) -> bool {
-        let output = Command::new("ya")
-            .args(&["pkg", "list"])
-            .output();
-
-        if let Ok(output) = output {
-            if output.status.success() {
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                return stdout.contains(package_name);
-            }
+        match crate::common::run_command("ya", &["pkg", "list"]) {
+            Ok(Some(stdout)) => stdout.contains(package_name),
+            _ => false,
         }
-        false
     }
 
     /// Configure Yazi by installing the everforest-medium theme package
@@ -38,17 +30,10 @@ impl YaziConfigurator {
         }
         
         // Run the command to install the everforest-medium package
-        let output = Command::new("ya")
-            .args(&["pkg", "add", package_name])
-            .output()
-            .map_err(|e| SetupError::IoError(format!("Failed to execute 'ya pkg add': {}", e)))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(SetupError::IoError(format!(
-                "Failed to add Yazi package: {}",
-                stderr
-            )));
+        match crate::common::run_command("ya", &["pkg", "add", package_name]) {
+            Ok(Some(_)) => {}
+            Ok(None) => return Err(SetupError::IoError("Failed to add Yazi package: command returned non-zero status".to_string())),
+            Err(e) => return Err(SetupError::IoError(format!("Failed to execute 'ya pkg add': {}", e))),
         }
 
         println!("Yazi configured successfully");

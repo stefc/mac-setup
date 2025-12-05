@@ -27,25 +27,17 @@ impl Platform {
 
     #[cfg(target_os = "macos")]
     pub fn get_serial_number(&self) -> Option<String> {
-        use std::process::Command;
         use regex::Regex;
-
         match self {
             Platform::MacOS => {
-                let output = Command::new("ioreg")
-                    .arg("-l")
-                    .output()
-                    .ok()?;
-
-                if !output.status.success() {
-                    return None;
+                if let Ok(Some(stdout)) = crate::common::run_command("ioreg", &["-l"]) {
+                    let re = Regex::new(r#""IOPlatformSerialNumber""\s*=\s*"([^"]+)""#).ok()?;
+                    re.captures(&stdout)
+                        .and_then(|cap| cap.get(1))
+                        .map(|m| m.as_str().to_string())
+                } else {
+                    None
                 }
-
-                let stdout = String::from_utf8_lossy(&output.stdout);
-                let re = Regex::new(r#""IOPlatformSerialNumber"\s*=\s*"([^"]+)""#).ok()?;
-                re.captures(&stdout)
-                    .and_then(|cap| cap.get(1))
-                    .map(|m| m.as_str().to_string())
             }
             Platform::Linux | Platform::Windows => None,
         }

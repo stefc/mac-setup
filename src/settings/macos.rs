@@ -1,5 +1,4 @@
 use super::{Platform, SystemSettings};
-use std::process::Command;
 
 /// macOS-specific system settings
 pub struct MacOSSettings;
@@ -26,17 +25,11 @@ impl SystemSettings for MacOSSettings {
 impl MacOSSettings {
 
     fn activate_settings(&self) -> Result<(), String> {
-        let output = Command::new("/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings")
-            .arg("-u")
-            .output()
-            .map_err(|e| format!("Failed to activate settings: {}", e))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to activate settings: {}", stderr));
+        match crate::common::run_command("/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings", &["-u"]) {
+            Ok(Some(_stdout)) => Ok(()),
+            Ok(None) => Err("Failed to activate settings: command returned non-zero status".to_string()),
+            Err(e) => Err(format!("Failed to activate settings: {}", e)),
         }
-
-        Ok(())
     }
 
     fn enable_trackpad_tap_to_click(&self) -> Result<(), String> {
@@ -46,32 +39,20 @@ impl MacOSSettings {
 
     fn set_local_setting_value(&self, domain: &str, key: &str, value: bool) -> Result<(), String> {
         let bool_str = if value { "true" } else { "false" };
-        let output = Command::new("defaults")
-            .args(&["write", domain, key, "-bool", bool_str])
-            .output()
-            .map_err(|e| format!("Failed to set {} {}: {}", domain, key, e))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to set {} {}: {}", domain, key, stderr));
+        match crate::common::run_command("defaults", &["write", domain, key, "-bool", bool_str]) {
+            Ok(Some(_)) => Ok(()),
+            Ok(None) => Err(format!("Failed to set {} {}: command returned non-zero status", domain, key)),
+            Err(e) => Err(format!("Failed to set {} {}: {}", domain, key, e)),
         }
-
-        Ok(())
     }
 
     fn set_global_setting_value(&self, key: &str, value: bool) -> Result<(), String> {
         let bool_str = if value { "true" } else { "false" };
-        let output = Command::new("defaults")
-            .args(&["write", "-g", key, "-bool", bool_str])
-            .output()
-            .map_err(|e| format!("Failed to set mouse {}: {}", key, e))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to set mouse {}: {}", key, stderr));
+        match crate::common::run_command("defaults", &["write", "-g", key, "-bool", bool_str]) {
+            Ok(Some(_)) => Ok(()),
+            Ok(None) => Err(format!("Failed to set mouse {}: command returned non-zero status", key)),
+            Err(e) => Err(format!("Failed to set mouse {}: {}", key, e)),
         }
-
-        Ok(())
     }
 
 }
