@@ -8,8 +8,8 @@ mod logging;
 mod settings;
 mod symlinks;
 use logging::{render_ui, Log, MemoryLogger};
-use settings::{create_platform_settings, Platform};
-use symlinks::{setup, ShellSymlinkCreator, SetupResult};
+use settings::{apply_system_settings, Platform};
+use symlinks::{setup, SetupResult};
 
 fn main() {
     let mut logger = MemoryLogger::default();
@@ -49,30 +49,8 @@ fn execute(logger: &mut dyn Log) -> SetupResult<()> {
     apply_system_settings(logger, platform)?;
 
     configurators::run_configurators(logger)?;
-    setup_symlinks(logger)?;
+    setup::setup_symlinks(logger)?;
 
     Ok(())
 }
 
-fn apply_system_settings(logger: &mut dyn Log, platform: Platform) -> SetupResult<()> {
-    logger.info("▶ Applying System Settings");
-    let settings = create_platform_settings(platform);
-    logger.info(&format!("Applying {}...", settings.name()));
-
-    match settings.apply() {
-        Ok(()) => {
-            logger.ok_with_highlight("System settings applied ->", settings.name());
-            logger.add_group("System Settings", 1);
-            Ok(())
-        }
-        Err(e) => {
-            logger.warn(&format!("Failed to apply system settings: {}", e));
-            Ok(()) // Don't fail the entire setup if settings fail
-        }
-    }
-}
-
-fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
-    let symlink_creator = ShellSymlinkCreator;
-    setup::setup_symlinks(logger, &symlink_creator)
-}

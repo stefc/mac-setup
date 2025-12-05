@@ -3,10 +3,17 @@ use crate::detectors::{
     AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector, HelixDetector,
 };
 use crate::logging::Log;
-use crate::symlinks::{SetupResult, SymlinkConfig, SymlinkCreator};
+use crate::symlinks::{SetupResult, ShellSymlinkCreator, SymlinkConfig, SymlinkCreator};
 use std::env;
 
 pub fn setup_symlinks(
+    logger: &mut dyn Log,
+) -> SetupResult<()> {
+    let symlink_creator = ShellSymlinkCreator;
+    setup_symlinks_impl(logger, &symlink_creator)
+}
+
+fn setup_symlinks_impl(
     logger: &mut dyn Log,
     symlink_creator: &dyn SymlinkCreator,
 ) -> SetupResult<()> {
