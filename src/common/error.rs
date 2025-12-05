@@ -1,10 +1,11 @@
+use std::error::Error as StdError;
 use std::fmt;
 
 /// Custom error type for setup operations
 #[derive(Debug)]
 pub enum SetupError {
     CommandFailed { command: String, exit_code: Option<i32> },
-    IoError(String),
+    Io(std::io::Error),
 }
 
 impl fmt::Display for SetupError {
@@ -13,8 +14,23 @@ impl fmt::Display for SetupError {
             SetupError::CommandFailed { command, exit_code } => {
                 write!(f, "Command failed: '{}' (exit code: {:?})", command, exit_code)
             }
-            SetupError::IoError(msg) => write!(f, "IO error: {}", msg),
+            SetupError::Io(e) => write!(f, "IO error: {}", e),
         }
+    }
+}
+
+impl StdError for SetupError {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        match self {
+            SetupError::Io(e) => Some(e),
+            _ => None,
+        }
+    }
+}
+
+impl From<std::io::Error> for SetupError {
+    fn from(err: std::io::Error) -> Self {
+        SetupError::Io(err)
     }
 }
 

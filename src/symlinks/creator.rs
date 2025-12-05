@@ -25,11 +25,8 @@ impl SymlinkCreator for ShellSymlinkCreator {
                 println!("{}", config.success_message);
                 Ok(())
             }
-            Ok(None) => Err(crate::symlinks::SetupError::CommandFailed {
-                command,
-                exit_code: None,
-            }),
-            Err(e) => Err(crate::symlinks::SetupError::IoError(e.to_string())),
+            Ok(None) => Err(crate::common::SetupError::CommandFailed { command, exit_code: None }),
+            Err(e) => Err(crate::common::SetupError::Io(e)),
         }
     }
 }

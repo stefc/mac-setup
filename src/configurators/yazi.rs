@@ -32,8 +32,16 @@ impl YaziConfigurator {
         // Run the command to install the everforest-medium package
         match crate::common::run_command("ya", &["pkg", "add", package_name]) {
             Ok(Some(_)) => {}
-            Ok(None) => return Err(SetupError::IoError("Failed to add Yazi package: command returned non-zero status".to_string())),
-            Err(e) => return Err(SetupError::IoError(format!("Failed to execute 'ya pkg add': {}", e))),
+            Ok(None) => {
+                return Err(SetupError::Io(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    "Failed to add Yazi package: command returned non-zero status",
+                )));
+            }
+            Err(e) => return Err(SetupError::Io(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Failed to execute 'ya pkg add': {}", e),
+            ))),
         }
 
         println!("Yazi configured successfully");

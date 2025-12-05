@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::env;
-use crate::symlinks::{SetupResult, SetupError};
+use crate::symlinks::SetupResult;
 use crate::configurators::Configurator;
 
 /// Configurator for .zshrc file
@@ -30,7 +30,7 @@ impl ZshrcConfigurator {
                 path.push(".zshrc");
                 path
             })
-            .ok_or_else(|| SetupError::IoError("HOME environment variable not set".to_string()))
+            .ok_or_else(|| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "HOME environment variable not set")))
     }
 
     fn zshrc_path_string_tilde() -> String {
@@ -60,7 +60,7 @@ impl ZshrcConfigurator {
 
         // Read the current content
         let content = fs::read_to_string(&zshrc_path)
-            .map_err(|e| SetupError::IoError(format!("Failed to read .zshrc: {}", e)))?;
+            .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to read .zshrc: {}", e))))?;
 
         // Modify the content
         let plugins_refs: Vec<&str> = self.plugins.iter().map(|s| s.as_str()).collect();
@@ -69,7 +69,7 @@ impl ZshrcConfigurator {
 
         // Write back to disk
         fs::write(&zshrc_path, new_content)
-            .map_err(|e| SetupError::IoError(format!("Failed to write .zshrc: {}", e)))?;
+            .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to write .zshrc: {}", e))))?;
 
         println!(".zshrc configured successfully");
         println!("  - Theme set to: {}", self.theme);
