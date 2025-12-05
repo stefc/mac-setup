@@ -1,2 +1,5 @@
 [flavor]
 dark = "everforest-medium"
+
+[mgr]
+show_hidden = true

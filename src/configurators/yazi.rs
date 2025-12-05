@@ -1,5 +1,5 @@
 use std::process::Command;
-use crate::detectors::{AppDetector, YaziDetector};
+use crate::detectors::{YaziDetector, app_detector::AppDetector};
 use crate::symlinks::{SetupResult, SetupError};
 use crate::configurators::Configurator;
 

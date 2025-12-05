@@ -1,19 +1,6 @@
-use std::process::Command;
-use crate::detectors::app_detector::AppDetector;
+use crate::detectors::which::WhichDetector;
 
-/// Detects if Yazi is installed
-pub struct YaziDetector;
+/// Detects if Yazi is installed (which-based detector)
+pub const YAZI_DETECTOR: WhichDetector = WhichDetector::new("yazi", "Yazi");
 
-impl AppDetector for YaziDetector {
-    fn is_installed(&self) -> bool {
-        Command::new("which")
-            .arg("yazi")
-            .output()
-            .map(|output| output.status.success())
-            .unwrap_or(false)
-    }
-
-    fn name(&self) -> &'static str {
-        "Yazi"
-    }
-}
+pub use YAZI_DETECTOR as YaziDetector;

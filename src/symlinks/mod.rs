@@ -28,8 +28,8 @@ pub type SetupResult<T> = Result<T, SetupError>;
 pub struct SymlinkConfig {
     pub source: String,
     pub destination: String,
-    pub installer_name: String,
-    pub success_message: String,
+    pub installer_name: &'static str,
+    pub success_message: &'static str,
 }
 
 /// Trait for creating symlinks

@@ -1,15 +1,5 @@
-use std::path::Path;
-use crate::detectors::app_detector::AppDetector;
+use crate::detectors::mac_app::MacAppDetector;
 
-/// Detects if WezTerm is installed
-pub struct WezTermDetector;
+pub const WEZTERM_DETECTOR: MacAppDetector = MacAppDetector::new("WezTerm", "WezTerm");
 
-impl AppDetector for WezTermDetector {
-    fn is_installed(&self) -> bool {
-        Path::new("/Applications/WezTerm.app").exists()
-    }
-
-    fn name(&self) -> &'static str {
-        "WezTerm"
-    }
-}
+pub use WEZTERM_DETECTOR as WezTermDetector;

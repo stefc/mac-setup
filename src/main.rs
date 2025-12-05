@@ -2,7 +2,7 @@ use std::env;
 // no local io usage
 
 mod detectors;
-use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector};
+use detectors::{AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector, HelixDetector};
 mod common;
 mod symlinks;
 use symlinks::{SymlinkCreator, ShellSymlinkCreator, SymlinkConfig, SetupResult};
@@ -129,8 +129,8 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                 SymlinkConfig {
                     source: format!("{}/.wezterm.lua", config_dir_str),
                     destination: "~/.wezterm.lua".to_string(),
-                    installer_name: "WezTerm".to_string(),
-                    success_message: "Symlink created successfully".to_string(),
+                    installer_name: "WezTerm",
+                    success_message: "Symlink created successfully",
                 },
             ),
             (
@@ -138,8 +138,8 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                 SymlinkConfig {
                     source: format!("{}/stefc.zsh-theme", config_dir_str),
                     destination: "~/.oh-my-zsh/themes/stefc.zsh-theme".to_string(),
-                    installer_name: "oh-my-zsh".to_string(),
-                    success_message: "Theme symlink created successfully".to_string(),
+                    installer_name: "oh-my-zsh",
+                    success_message: "Theme symlink created successfully",
                 },
             ),
             (
@@ -147,8 +147,8 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                 SymlinkConfig {
                     source: format!("{}/code.settings.json", config_dir_str),
                     destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
-                    installer_name: "Visual Studio Code".to_string(),
-                    success_message: "Settings symlink created successfully".to_string(),
+                    installer_name: "Visual Studio Code",
+                    success_message: "Settings symlink created successfully",
                 },
             ),
             (
@@ -156,8 +156,17 @@ impl<C: SymlinkCreator> SetupOrchestrator<C> {
                 SymlinkConfig {
                     source: format!("{}/yazi.theme.toml", config_dir_str),
                     destination: "~/.config/yazi/theme.toml".to_string(),
-                    installer_name: "Yazi".to_string(),
-                    success_message: "Theme symlink created successfully".to_string(),
+                    installer_name: "Yazi",
+                    success_message: "Theme symlink created successfully",
+                },
+            ),
+            (
+                Box::new(HelixDetector) as Box<dyn AppDetector>,
+                SymlinkConfig {
+                    source: format!("{}/helix.config.toml", config_dir_str),
+                    destination: "~/.config/helix/config.toml".to_string(),
+                    installer_name: "Helix",
+                    success_message: "Theme symlink created successfully",
                 },
             ),
         ];
