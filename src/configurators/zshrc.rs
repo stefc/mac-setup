@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::env;
+use crate::common::{Log, replace_home_with_tilde};
 use crate::symlinks::SetupResult;
 use crate::configurators::Configurator;
 
@@ -33,18 +34,6 @@ impl ZshrcConfigurator {
             .ok_or_else(|| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "HOME environment variable not set")))
     }
 
-    fn zshrc_path_string_tilde() -> String {
-        if let Ok(home_str) = env::var("HOME") {
-            let mut path = PathBuf::from(&home_str);
-            path.push(".zshrc");
-            return PathBuf::from(path)
-                .display()
-                .to_string()
-                .replacen(&home_str, "~", 1);
-        }
-        "~/.zshrc".to_string()
-    }
-
     /// Check if .zshrc exists
     fn exists(&self) -> bool {
         Self::get_zshrc_path()
@@ -53,7 +42,7 @@ impl ZshrcConfigurator {
     }
 
     /// Configure .zshrc with the specified theme, plugins, and environment variables
-    fn run_configure(&self) -> SetupResult<()> {
+    fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
         let zshrc_path = Self::get_zshrc_path()?;
         
         println!("Configuring .zshrc at {:?}...", zshrc_path);
@@ -70,6 +59,8 @@ impl ZshrcConfigurator {
         // Write back to disk
         fs::write(&zshrc_path, new_content)
             .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to write .zshrc: {}", e))))?;
+
+        logger.ok_with_highlight("Configured .zshrc at ->", &replace_home_with_tilde(&zshrc_path));
 
         println!(".zshrc configured successfully");
         println!("  - Theme set to: {}", self.theme);
@@ -179,11 +170,13 @@ impl Configurator for ZshrcConfigurator {
         self.exists()
     }
 
-    fn configure(&self) -> SetupResult<()> {
-        self.run_configure()
+    fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        self.run_configure(logger)
     }
 
     fn affected_files(&self) -> Vec<String> {
-        vec![Self::zshrc_path_string_tilde()]
+        Self::get_zshrc_path()
+            .map(|path| vec![replace_home_with_tilde(&path)])
+            .unwrap_or_default()
     }
 }

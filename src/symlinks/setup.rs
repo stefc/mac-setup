@@ -30,8 +30,7 @@ fn setup_symlinks_impl(
             SymlinkConfig {
                 source: format!("{}/.wezterm.lua", config_dir_str),
                 destination: "~/.wezterm.lua".to_string(),
-                installer_name: "WezTerm",
-                success_message: "Symlink created successfully",
+                installer_name: "WezTerm"
             },
         ),
         (
@@ -39,8 +38,7 @@ fn setup_symlinks_impl(
             SymlinkConfig {
                 source: format!("{}/stefc.zsh-theme", config_dir_str),
                 destination: "~/.oh-my-zsh/themes/stefc.zsh-theme".to_string(),
-                installer_name: "oh-my-zsh",
-                success_message: "Theme symlink created successfully",
+                installer_name: "oh-my-zsh"
             },
         ),
         (
@@ -48,8 +46,7 @@ fn setup_symlinks_impl(
             SymlinkConfig {
                 source: format!("{}/code.settings.json", config_dir_str),
                 destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
-                installer_name: "Visual Studio Code",
-                success_message: "Settings symlink created successfully",
+                installer_name: "Visual Studio Code"
             },
         ),
         (
@@ -57,8 +54,7 @@ fn setup_symlinks_impl(
             SymlinkConfig {
                 source: format!("{}/yazi.theme.toml", config_dir_str),
                 destination: "~/.config/yazi/theme.toml".to_string(),
-                installer_name: "Yazi",
-                success_message: "Theme symlink created successfully",
+                installer_name: "Yazi"
             },
         ),
         (
@@ -66,8 +62,7 @@ fn setup_symlinks_impl(
             SymlinkConfig {
                 source: format!("{}/helix.config.toml", config_dir_str),
                 destination: "~/.config/helix/config.toml".to_string(),
-                installer_name: "Helix",
-                success_message: "Theme symlink created successfully",
+                installer_name: "Helix"
             },
         ),
     ];
@@ -75,14 +70,9 @@ fn setup_symlinks_impl(
     let mut affected = 0usize;
     for (detector, config) in configs {
         if detector.is_installed() {
-            logger.info(&format!(
-                "{} is installed, creating symlink for {} config...",
-                detector.name(),
-                config.installer_name
-            ));
             symlink_creator.create(&config)?;
             logger.ok_with_highlight(
-                &format!("{} ->", config.success_message),
+                "Symlink created successfully",
                 &config.destination,
             );
             affected += 1;

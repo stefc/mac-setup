@@ -11,8 +11,7 @@ pub use crate::common::{SetupError, SetupResult};
 pub struct SymlinkConfig {
     pub source: String,
     pub destination: String,
-    pub installer_name: &'static str,
-    pub success_message: &'static str,
+    pub installer_name: &'static str
 }
 
 

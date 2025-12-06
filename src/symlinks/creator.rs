@@ -22,7 +22,6 @@ impl SymlinkCreator for ShellSymlinkCreator {
                 if !stdout.is_empty() {
                     print!("{}", stdout);
                 }
-                println!("{}", config.success_message);
                 Ok(())
             }
             Ok(None) => Err(crate::common::SetupError::CommandFailed { command, exit_code: None }),

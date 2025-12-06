@@ -1,8 +1,10 @@
 pub mod zshrc;
 pub mod yazi;
+pub mod vscode;
 
 pub use zshrc::ZshrcConfigurator;
 pub use yazi::YaziConfigurator;
+pub use vscode::VscodeConfigurator;
 
 use crate::{symlinks::SetupResult, common::Log};
 
@@ -15,15 +17,15 @@ pub trait Configurator {
     fn should_run(&self) -> bool;
     
     /// Execute the configuration
-    fn configure(&self) -> SetupResult<()>;
+    fn configure(&self, logger: &mut dyn Log) -> SetupResult<()>;
 
     /// Default run helper: checks `should_run()` and calls `configure()`.
-    fn run(&self) -> SetupResult<()> {
+    fn run(&self, logger: &mut dyn Log) -> SetupResult<()> {
         if !self.should_run() {
-            println!("Skipping {}", self.name());
+            logger.info(&format!("Skipping {}...", self.name()));
             return Ok(());
         }
-        self.configure()
+        self.configure(logger)
     }
 
     /// Return affected file paths for logging (tilde-expanded or user-friendly)
@@ -34,13 +36,14 @@ pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Configuration");
     let configurators: Vec<Box<dyn Configurator>> = vec![
         Box::new(YaziConfigurator),
+        Box::new(VscodeConfigurator),
         Box::new(ZshrcConfigurator::default()),
     ];
     let mut affected = 0usize;
     for configurator in configurators {
-        logger.info(&format!("Checking {}...", configurator.name()));
+        
         // Use the centralized run helper which handles should_run() and skipping
-        configurator.run()?;
+        configurator.run(logger)?;
         let files = configurator.affected_files();
         for file in files {
             logger.ok_with_highlight("Configured successfully ->", &file);
