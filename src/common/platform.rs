@@ -7,10 +7,6 @@ pub enum Platform {
 }
 
 impl Platform {
-    /// Detect the current platform from compile-time constants.
-    ///
-    /// This returns a best-effort mapping of `std::env::consts::OS` to
-    /// the `Platform` enum. Unknown platforms fall back to `Linux`.
     pub fn detect() -> Self {
         match std::env::consts::OS {
             "macos" => Platform::MacOS,
@@ -20,7 +16,6 @@ impl Platform {
         }
     }
 
-    /// Human-friendly name for the platform.
     pub fn as_str(&self) -> &str {
         match self {
             Platform::MacOS => "macOS",
@@ -29,18 +24,10 @@ impl Platform {
         }
     }
 
-    /// Attempt to retrieve the machine serial number on macOS.
-    ///
-    /// On non-macOS targets this always returns `None`. On macOS it runs
-    /// `ioreg -l` and extracts the `IOPlatformSerialNumber` if available.
-    ///
-    /// This method intentionally returns `Option<String>` so callers can
-    /// simply ignore the value when it's not present.
     #[allow(unused_variables)]
     pub fn get_serial_number(&self) -> Option<String> {
         #[cfg(not(target_os = "macos"))]
         {
-            // Serial numbers are only supported on macOS in this codebase.
             None
         }
 

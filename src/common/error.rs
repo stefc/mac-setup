@@ -1,7 +1,6 @@
 use std::error::Error as StdError;
 use std::fmt;
 
-/// Custom error type for setup operations
 #[derive(Debug)]
 pub enum SetupError {
     CommandFailed { command: String, exit_code: Option<i32> },
