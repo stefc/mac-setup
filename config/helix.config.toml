@@ -1,2 +1,5 @@
 theme = "peachpuff"
 
+[keys.normal]
+
+D = ["ensure_selections_forward", "extend_to_line_end"]

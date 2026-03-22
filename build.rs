@@ -3,10 +3,8 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-/// Main entry point for the build script.
 fn main() {
     if let Err(err) = run() {
-        // Emit a Cargo warning for visibility and exit with a non-zero status code.
         println!("cargo:warning=build.rs failed: {}", err);
         std::process::exit(1);
     }
@@ -68,19 +66,14 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
-/// Copies a file from `source` to `dest` only if the source is newer than the destination.
-///
-/// Returns `Ok(true)` if the file was copied, `Ok(false)` if skipped, and `Err` on failure.
 fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     if !source.exists() {
-        return Ok(false); // Nothing to do if the source doesn't exist.
+        return Ok(false);
     }
 
-    // Check if a copy is necessary.
     let should_copy = if !dest.exists() {
-        true // Copy if destination doesn't exist.
+        true
     } else {
-        // Copy if source modification time is newer than destination.
         let src_meta = fs::metadata(source)?;
         let dest_meta = fs::metadata(dest)?;
         let src_time = src_meta
@@ -93,7 +86,6 @@ fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     };
 
     if should_copy {
-        // Ensure the parent directory of the destination exists.
         if let Some(parent) = dest.parent() {
             fs::create_dir_all(parent)?;
         }
