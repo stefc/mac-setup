@@ -7,7 +7,6 @@ use crate::common::Log;
 pub struct YaziConfigurator;
 
 impl YaziConfigurator {
-    /// Check if Yazi is installed
     fn is_installed(&self) -> bool {
         YaziDetector.is_installed()
     }

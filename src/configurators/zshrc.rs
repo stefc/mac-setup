@@ -8,16 +8,16 @@ use crate::configurators::Configurator;
 /// Configurator for .zshrc file
 pub struct ZshrcConfigurator {
     theme: &'static str,
-    plugins: Vec<&'static str>,
-    env_vars: Vec<(&'static str, &'static str)>,
+    plugins: &'static [&'static str],
+    env_vars: &'static [(&'static str, &'static str)],
 }
 
 impl Default for ZshrcConfigurator {
     fn default() -> Self {
         Self {
             theme: "stefc",
-            plugins: vec!["z", "gh"],
-            env_vars: vec![
+            plugins: &["z", "gh"],
+            env_vars: &[
                 ("HOMEBREW_NO_AUTO_UPDATE", "1"),
                 ("EDITOR","hx")
             ],
@@ -55,9 +55,7 @@ impl ZshrcConfigurator {
             .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to read .zshrc: {}", e))))?;
 
         // Modify the content
-        let plugins_refs: Vec<&str> = self.plugins.iter().map(|s| *s).collect();
-        let env_vars_refs: Vec<(&str, &str)> = self.env_vars.iter().map(|(k, v)| (*k, *v)).collect();
-        let new_content = self.modify_zshrc_content(&content, &self.theme, &plugins_refs, &env_vars_refs);
+        let new_content = self.modify_zshrc_content(&content, &self.theme, self.plugins, self.env_vars);
 
         // Write back to disk
         fs::write(&zshrc_path, new_content)
@@ -68,7 +66,7 @@ impl ZshrcConfigurator {
         println!(".zshrc configured successfully");
         println!("  - Theme set to: {}", self.theme);
         println!("  - Plugins: {}", self.plugins.join(", "));
-        for (key, value) in &self.env_vars {
+        for (key, value) in self.env_vars {
             println!("  - Export {}={}", key, value);
         }
 
