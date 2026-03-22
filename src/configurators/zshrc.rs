@@ -7,17 +7,20 @@ use crate::configurators::Configurator;
 
 /// Configurator for .zshrc file
 pub struct ZshrcConfigurator {
-    theme: String,
-    plugins: Vec<String>,
-    env_vars: Vec<(String, String)>,
+    theme: &'static str,
+    plugins: Vec<&'static str>,
+    env_vars: Vec<(&'static str, &'static str)>,
 }
 
 impl Default for ZshrcConfigurator {
     fn default() -> Self {
         Self {
-            theme: "stefc".to_string(),
-            plugins: vec!["z".to_string(), "gh".to_string()],
-            env_vars: vec![("HOMEBREW_NO_AUTO_UPDATE".to_string(), "1".to_string())],
+            theme: "stefc",
+            plugins: vec!["z", "gh"],
+            env_vars: vec![
+                ("HOMEBREW_NO_AUTO_UPDATE", "1"),
+                ("EDITOR","hx")
+            ],
         }
     }
 }
@@ -44,7 +47,7 @@ impl ZshrcConfigurator {
     /// Configure .zshrc with the specified theme, plugins, and environment variables
     fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
         let zshrc_path = Self::get_zshrc_path()?;
-        
+
         println!("Configuring .zshrc at {:?}...", zshrc_path);
 
         // Read the current content
@@ -52,8 +55,8 @@ impl ZshrcConfigurator {
             .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to read .zshrc: {}", e))))?;
 
         // Modify the content
-        let plugins_refs: Vec<&str> = self.plugins.iter().map(|s| s.as_str()).collect();
-        let env_vars_refs: Vec<(&str, &str)> = self.env_vars.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+        let plugins_refs: Vec<&str> = self.plugins.iter().map(|s| *s).collect();
+        let env_vars_refs: Vec<(&str, &str)> = self.env_vars.iter().map(|(k, v)| (*k, *v)).collect();
         let new_content = self.modify_zshrc_content(&content, &self.theme, &plugins_refs, &env_vars_refs);
 
         // Write back to disk
@@ -75,13 +78,13 @@ impl ZshrcConfigurator {
     /// Modify the .zshrc content by updating theme, plugins, and adding environment variables
     fn modify_zshrc_content(&self, content: &str, theme: &str, plugins_to_add: &[&str], env_vars: &[(&str, &str)]) -> String {
         let mut lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
-        
+
         // Update or add ZSH_THEME
         self.update_or_add_line(&mut lines, "ZSH_THEME", &format!("ZSH_THEME=\"{}\"", theme));
-        
+
         // Extend plugins instead of replacing them
         self.extend_plugins(&mut lines, plugins_to_add);
-        
+
         // Add environment variables if not present
         for (key, value) in env_vars {
             let export_line = format!("export {}={}", key, value);
@@ -94,7 +97,7 @@ impl ZshrcConfigurator {
                 lines.push(export_line);
             }
         }
-        
+
         lines.join("\n") + "\n"
     }
 
@@ -108,7 +111,7 @@ impl ZshrcConfigurator {
             // Parse existing plugins
             let line = &lines[pos];
             let mut existing_plugins = Vec::new();
-            
+
             // Extract plugins from plugins=(plugin1 plugin2 ...)
             if let Some(start) = line.find('(') {
                 if let Some(end) = line.find(')') {
@@ -119,14 +122,14 @@ impl ZshrcConfigurator {
                         .collect();
                 }
             }
-            
+
             // Add new plugins if not already present
             for plugin in plugins_to_add {
                 if !existing_plugins.iter().any(|p| p == plugin) {
                     existing_plugins.push(plugin.to_string());
                 }
             }
-            
+
             // Update the line
             lines[pos] = format!("plugins=({})", existing_plugins.join(" "));
         } else {
@@ -136,7 +139,7 @@ impl ZshrcConfigurator {
                 let trimmed = line.trim();
                 !trimmed.is_empty() && !trimmed.starts_with('#')
             }).unwrap_or(0);
-            
+
             lines.insert(insert_pos, plugins_line);
         }
     }
@@ -155,7 +158,7 @@ impl ZshrcConfigurator {
                 let trimmed = line.trim();
                 !trimmed.is_empty() && !trimmed.starts_with('#')
             }).unwrap_or(0);
-            
+
             lines.insert(insert_pos, new_line.to_string());
         }
     }
