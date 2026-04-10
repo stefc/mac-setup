@@ -78,64 +78,69 @@ pub fn render_ui(snapshot: &LogSnapshot, err: Option<String>) -> io::Result<()> 
     let mut terminal = Terminal::new(backend)?;
 
     terminal.clear()?;
-    terminal.draw(|f| {
-        let size = f.size();
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(3),
-                Constraint::Min(10),
-                Constraint::Length(1),
-            ])
-            .split(size);
-
-        let title = Paragraph::new(Line::from(vec![
-            Span::styled("mac-setup", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-            Span::raw(" — Setup Summary"),
-        ]))
-        .block(Block::default().borders(Borders::ALL));
-        f.render_widget(title, chunks[0]);
-
-        let items: Vec<ListItem> = snapshot
-            .lines
-            .iter()
-            .map(|l| {
-                let base_style = match l.level {
-                    LogLevel::Info => Style::default(),
-                    LogLevel::Ok => Style::default().fg(Color::Green),
-                    LogLevel::Warn => Style::default().fg(Color::Yellow),
-                };
-                let mut spans: Vec<Span> = vec![Span::styled(l.msg.clone(), base_style)];
-                if let Some(h) = &l.highlight {
-                    spans.push(Span::raw(" "));
-                    spans.push(Span::styled(h.clone(), Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)));
-                }
-                ListItem::new(Line::from(spans))
-            })
-            .collect();
-
-        let list = List::new(items)
-            .block(Block::default().title("Steps").borders(Borders::ALL));
-        f.render_widget(list, chunks[1]);
-
-        let footer_text = if let Some(e) = err {
-            format!("Error: {}", e)
-        } else {
-            let mut summary_parts: Vec<String> = Vec::new();
-            for g in &snapshot.groups {
-                summary_parts.push(format!("{}: {}", g.title, g.affected_count));
-            }
-            if summary_parts.is_empty() {
-                "Summary: no changes".to_string()
-            } else {
-                format!("Summary — {}", summary_parts.join(" · "))
-            }
-        };
-        let footer = Paragraph::new(footer_text)
-            .block(Block::default().borders(Borders::ALL));
-        f.render_widget(footer, chunks[2]);
-    })?;
+    terminal.draw(|f| draw_frame(f, snapshot, err.as_deref()))?;
 
     disable_raw_mode()?;
     Ok(())
+}
+
+fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>) {
+    let size = f.size();
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Min(10),
+            Constraint::Length(1),
+        ])
+        .split(size);
+
+    // Title
+    let title = Paragraph::new(Line::from(vec![
+        Span::styled("mac-setup", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        Span::raw(" — Setup Summary"),
+    ]))
+    .block(Block::default().borders(Borders::ALL));
+    f.render_widget(title, chunks[0]);
+
+    // Content
+    let items: Vec<ListItem> = snapshot
+        .lines
+        .iter()
+        .map(|l| {
+            let base_style = match l.level {
+                LogLevel::Info => Style::default(),
+                LogLevel::Ok => Style::default().fg(Color::Green),
+                LogLevel::Warn => Style::default().fg(Color::Yellow),
+            };
+            let mut spans: Vec<Span> = vec![Span::styled(l.msg.clone(), base_style)];
+            if let Some(h) = &l.highlight {
+                spans.push(Span::raw(" "));
+                spans.push(Span::styled(h.clone(), Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)));
+            }
+            ListItem::new(Line::from(spans))
+        })
+        .collect();
+
+    let list = List::new(items)
+        .block(Block::default().title("Steps").borders(Borders::ALL));
+    f.render_widget(list, chunks[1]);
+
+    // Summary
+    let footer_text = if let Some(e) = err {
+        format!("Error: {}", e)
+    } else {
+        let mut summary_parts: Vec<String> = Vec::new();
+        for g in &snapshot.groups {
+            summary_parts.push(format!("{}: {}", g.title, g.affected_count));
+        }
+        if summary_parts.is_empty() {
+            "Summary: no changes".to_string()
+        } else {
+            format!("Summary — {}", summary_parts.join(" · "))
+        }
+    };
+    let footer = Paragraph::new(footer_text)
+        .block(Block::default().borders(Borders::ALL));
+    f.render_widget(footer, chunks[2]);
 }
