@@ -19,23 +19,6 @@ fn main() {
     let snapshot = logger.snapshot();
     if let Err(e) = render_ui(&snapshot, res.as_ref().err().map(|e| e.to_string())) {
         eprintln!("Failed to render UI: {}", e);
-    }
-
-    // Also print a plain-text summary to stdout for non-TUI contexts
-    if snapshot.groups.is_empty() {
-        // Fallback: no groups recorded
-        println!("Summary: no changes");
-    } else {
-        let parts: Vec<String> = snapshot
-            .groups
-            .iter()
-            .map(|g| format!("{}: {}", g.title, g.affected_count))
-            .collect();
-        println!("Summary — {}", parts.join(" · "));
-    }
-
-    if let Err(e) = res {
-        eprintln!("Setup failed: {}", e);
         std::process::exit(1);
     }
 }

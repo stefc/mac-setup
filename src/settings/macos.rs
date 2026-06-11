@@ -13,7 +13,6 @@ impl SystemSettings for MacOSSettings {
         self.set_global_setting_value("com.apple.swipescrolldirection", false)?;
         self.enable_trackpad_tap_to_click()?;
         self.activate_settings()?;
-
         Ok(())
     }
 
@@ -55,4 +54,13 @@ impl MacOSSettings {
         }
     }
 
+    fn set_wallpaper(&self, file: &str) -> Result<(), String> {
+        let cmd = "sqlite3 ~/Library/Application\\ Support/Dock/desktoppicture.db";
+        let sql = format!("update data set value = '{}'", file);
+        match crate::common::run_command(cmd, &[&sql]) {
+            Ok(Some(_)) => Ok(()),
+            Ok(None) => Err(format!("Failed to update {}", file)),
+            Err(e) => Err(format!("Failed to update {}", file)),
+        }
+    }
 }

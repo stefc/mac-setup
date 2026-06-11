@@ -1,6 +1,6 @@
 
 use crate::detectors::{
-    AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector, HelixDetector,
+    AppDetector, WezTermDetector, OhMyZshDetector, VSCodeDetector, YaziDetector, HelixDetector, RustRoverDetector
 };
 use crate::common::Log;
 use crate::symlinks::{SetupResult, ShellSymlinkCreator, SymlinkConfig, SymlinkCreator};
@@ -64,7 +64,7 @@ fn setup_symlinks_impl(
                 destination: "~/.config/helix/config.toml".to_string(),
                 installer_name: "Helix"
             },
-        ),
+        )
     ];
 
     let mut affected = 0usize;
