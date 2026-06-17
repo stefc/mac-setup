@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
 fn main() {
     if let Err(err) = run() {
@@ -10,7 +11,6 @@ fn main() {
     }
 }
 
-/// Orchestrates the build process by calling specialized functions for each task.
 fn run() -> io::Result<()> {
     let target_dir = find_target_dir()?;
     prepare_assets(&target_dir)?;
@@ -53,9 +53,40 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         let copied = copy_if_newer(&source_path, &dest_path)
             .expect(&format!("Failed to check or copy asset {}", asset_name));
 
-        if copied {
-            println!("cargo:warning=Copied {} to {}", asset_name, dest_path.display());
-        } else {
+        if !copied {
+            println!(
+                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
+                asset_name
+            );
+        }
+    }
+
+    const HELIX_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
+    for &asset_name in HELIX_ASSETS {
+        let source_path = Path::new("config").join("helix-theme").join(asset_name);
+        let dest_path = config_dest.join("helix-theme").join(asset_name);
+
+        // Perform the copy and provide feedback.
+        let copied = copy_if_newer(&source_path, &dest_path)
+            .expect(&format!("Failed to check or copy asset {}", asset_name));
+
+        if !copied {
+            println!(
+                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
+                asset_name
+            );
+        }
+    }
+    const WEZTERM_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
+    for &asset_name in WEZTERM_ASSETS {
+        let source_path = Path::new("config").join("wezterm-theme").join(asset_name);
+        let dest_path = config_dest.join("wezterm-theme").join(asset_name);
+
+        // Perform the copy and provide feedback.
+        let copied = copy_if_newer(&source_path, &dest_path)
+            .expect(&format!("Failed to check or copy asset {}", asset_name));
+
+        if !copied {
             println!(
                 "cargo:warning=Skipped copying {}; destination is newer or source is missing",
                 asset_name
@@ -66,6 +97,10 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
+fn get_modified_time(path: &Path) -> io::Result<SystemTime> {
+    Ok(fs::metadata(path)?.modified()?)
+}
+
 fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     if !source.exists() {
         return Ok(false);
@@ -74,13 +109,10 @@ fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     let should_copy = if !dest.exists() {
         true
     } else {
-        let src_meta = fs::metadata(source)?;
-        let dest_meta = fs::metadata(dest)?;
-        let src_time = src_meta
-            .modified()
+        let src_time = get_modified_time(source)
             .expect("Failed to get modification time for source");
-        let dest_time = dest_meta
-            .modified()
+
+        let dest_time = get_modified_time(dest)
             .expect("Failed to get modification time for destination");
         src_time > dest_time
     };

@@ -53,14 +53,4 @@ impl MacOSSettings {
             Err(e) => Err(format!("Failed to set mouse {}: {}", key, e)),
         }
     }
-
-    fn set_wallpaper(&self, file: &str) -> Result<(), String> {
-        let cmd = "sqlite3 ~/Library/Application\\ Support/Dock/desktoppicture.db";
-        let sql = format!("update data set value = '{}'", file);
-        match crate::common::run_command(cmd, &[&sql]) {
-            Ok(Some(_)) => Ok(()),
-            Ok(None) => Err(format!("Failed to update {}", file)),
-            Err(e) => Err(format!("Failed to update {}", file)),
-        }
-    }
 }
