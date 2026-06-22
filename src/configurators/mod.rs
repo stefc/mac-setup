@@ -1,11 +1,12 @@
 pub mod zshrc;
 pub mod yazi;
 pub mod vscode;
+pub mod wezterm;
 
 pub use zshrc::ZshrcConfigurator;
 pub use yazi::YaziConfigurator;
 pub use vscode::VscodeConfigurator;
-
+pub use wezterm::WeztermConfigurator;
 use crate::{symlinks::SetupResult, common::Log};
 
 pub trait Configurator {
@@ -29,6 +30,7 @@ pub trait Configurator {
 pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Configuration");
     let configurators: Vec<Box<dyn Configurator>> = vec![
+        Box::new(WeztermConfigurator),
         Box::new(YaziConfigurator),
         Box::new(VscodeConfigurator),
         Box::new(ZshrcConfigurator::default()),

@@ -28,15 +28,31 @@ fn setup_symlinks_impl(
             Box::new(WezTermDetector) as Box<dyn AppDetector>,
             SymlinkConfig {
                 source: format!("{}/.wezterm.lua", config_dir_str),
-                destination: "~/.wezterm.lua".to_string(),
+                destination: "~/.wezterm.lua",
                 installer_name: "WezTerm"
+            },
+        ),
+        (
+            Box::new(WezTermDetector) as Box<dyn AppDetector>,
+            SymlinkConfig {
+                source: format!("{}/wezterm-theme/warm-burnout-light.toml", config_dir_str),
+                destination: "~/.config/wezterm/colors/warm-burnout-light.toml",
+                installer_name: "WezTerm-Warm Burnout"
+            },
+        ),
+        (
+            Box::new(WezTermDetector) as Box<dyn AppDetector>,
+            SymlinkConfig {
+                source: format!("{}/wezterm-theme/warm-burnout-dark.toml", config_dir_str),
+                destination: "~/.config/wezterm/colors/warm-burnout-dark.toml",
+                installer_name: "WezTerm-Warm Burnout"
             },
         ),
         (
             Box::new(OhMyZshDetector) as Box<dyn AppDetector>,
             SymlinkConfig {
                 source: format!("{}/stefc.zsh-theme", config_dir_str),
-                destination: "~/.oh-my-zsh/themes/stefc.zsh-theme".to_string(),
+                destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
                 installer_name: "oh-my-zsh"
             },
         ),
@@ -44,7 +60,7 @@ fn setup_symlinks_impl(
             Box::new(VSCodeDetector) as Box<dyn AppDetector>,
             SymlinkConfig {
                 source: format!("{}/code.settings.json", config_dir_str),
-                destination: "~/Library/Application Support/Code/User/settings.json".to_string(),
+                destination: "~/Library/Application Support/Code/User/settings.json",
                 installer_name: "Visual Studio Code"
             },
         ),
@@ -52,7 +68,7 @@ fn setup_symlinks_impl(
             Box::new(YaziDetector) as Box<dyn AppDetector>,
             SymlinkConfig {
                 source: format!("{}/yazi.theme.toml", config_dir_str),
-                destination: "~/.config/yazi/theme.toml".to_string(),
+                destination: "~/.config/yazi/theme.toml",
                 installer_name: "Yazi"
             },
         ),
@@ -60,8 +76,24 @@ fn setup_symlinks_impl(
             Box::new(HelixDetector) as Box<dyn AppDetector>,
             SymlinkConfig {
                 source: format!("{}/helix.config.toml", config_dir_str),
-                destination: "~/.config/helix/config.toml".to_string(),
+                destination: "~/.config/helix/config.toml",
                 installer_name: "Helix"
+            },
+        ),
+        (
+            Box::new(HelixDetector) as Box<dyn AppDetector>,
+            SymlinkConfig {
+                source: format!("{}/helix-theme/warm-burnout-light.toml", config_dir_str),
+                destination: "~/.config/helix/themes/warm-burnout-light.toml",
+                installer_name: "Helix-Warm Burnout"
+            },
+        ),
+        (
+            Box::new(HelixDetector) as Box<dyn AppDetector>,
+            SymlinkConfig {
+                source: format!("{}/helix-theme/warm-burnout-dark.toml", config_dir_str),
+                destination: "~/.config/helix/themes/warm-burnout-dark.toml",
+                installer_name: "Helix-Warm Burnout"
             },
         )
     ];

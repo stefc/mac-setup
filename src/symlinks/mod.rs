@@ -10,7 +10,7 @@ pub use crate::common::{SetupError, SetupResult};
 #[derive(Clone)]
 pub struct SymlinkConfig {
     pub source: String,
-    pub destination: String,
+    pub destination: &'static str,
     pub installer_name: &'static str
 }
 
