@@ -10,8 +10,6 @@
     "editor.fontFamily": "JetBrains Mono",
     "editor.fontSize": 16,
     "editor.fontLigatures": true,
-    "workbench.colorTheme": "Solarized Light",
-    "files.autoSave": "afterDelay",
     "editor.inlineSuggest.enabled": true,
 	"editor.rulers": [120],
 	"editor.showFoldingControls": "always",	
@@ -19,11 +17,17 @@
 	"editor.wordWrapColumn": 120,
 	"editor.wordWrap": "bounded",
 	"editor.accessibilitySupport": "off",
+    "files.autoSave": "afterDelay",
     "files.exclude": {
 		"**/bin": true,
 		"**/obj": true,
         "**/.DS_Store": true,
         "**/target": true
 	},
-    "zenMode.hideLineNumbers": true
+    "zenMode.hideLineNumbers": true,
+    "workbench.preferredDarkColorTheme": "Warm Burnout Dark",
+    "workbench.preferredLightColorTheme": "Warm Burnout Light",
+    "workbench.preferredHighContrastLightColorTheme": "Warm Burnout Light",
+    "workbench.preferredHighContrastColorTheme": "Warm Burnout Dark",
+    "window.autoDetectColorScheme": true
 }

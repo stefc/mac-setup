@@ -35,7 +35,9 @@ impl VscodeConfigurator {
             "ms-dotnettools.vscode-dotnet-runtime",
             "pflannery.vscode-versionlens",
             "rust-lang.rust-analyzer",
-            "vadimcn.vscode-lldb"
+            "vadimcn.vscode-lldb",
+            "felip3fdl.warm-burnout",
+            "isudox.vscode-jetbrains-keybindings"
         ]
     }
 
