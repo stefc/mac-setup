@@ -23,96 +23,98 @@ fn setup_symlinks_impl(
     let config_dir = exe_dir.join("config");
     let config_dir_str = config_dir.display().to_string();
 
-    let configs = vec![
+    let configs: Vec<(&dyn AppDetector, Vec<SymlinkConfig>)> = vec![
         (
-            Box::new(WezTermDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/.wezterm.lua", config_dir_str),
-                destination: "~/.wezterm.lua",
-                installer_name: "WezTerm"
-            },
+            &WezTermDetector as &dyn AppDetector,
+            vec![
+                SymlinkConfig {
+                    source: format!("{}/.wezterm.lua", config_dir_str),
+                    destination: "~/.wezterm.lua",
+                    installer_name: "WezTerm"
+                },
+                SymlinkConfig {
+                    source: format!("{}/wezterm-theme/warm-burnout-light.toml", config_dir_str),
+                    destination: "~/.config/wezterm/colors/warm-burnout-light.toml",
+                    installer_name: "WezTerm-Warm Burnout"
+                },
+                SymlinkConfig {
+                    source: format!("{}/wezterm-theme/warm-burnout-dark.toml", config_dir_str),
+                    destination: "~/.config/wezterm/colors/warm-burnout-dark.toml",
+                    installer_name: "WezTerm-Warm Burnout"
+                },
+            ],
         ),
         (
-            Box::new(WezTermDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/wezterm-theme/warm-burnout-light.toml", config_dir_str),
-                destination: "~/.config/wezterm/colors/warm-burnout-light.toml",
-                installer_name: "WezTerm-Warm Burnout"
-            },
+            &OhMyZshDetector as &dyn AppDetector,
+            vec![
+                SymlinkConfig {
+                    source: format!("{}/stefc.zsh-theme", config_dir_str),
+                    destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
+                    installer_name: "oh-my-zsh"
+                },
+            ],
         ),
         (
-            Box::new(WezTermDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/wezterm-theme/warm-burnout-dark.toml", config_dir_str),
-                destination: "~/.config/wezterm/colors/warm-burnout-dark.toml",
-                installer_name: "WezTerm-Warm Burnout"
-            },
+            &VSCodeDetector as &dyn AppDetector,
+            vec![
+                SymlinkConfig {
+                    source: format!("{}/code.settings.json", config_dir_str),
+                    destination: "~/Library/Application Support/Code/User/settings.json",
+                    installer_name: "Visual Studio Code"
+                },
+            ],
         ),
         (
-            Box::new(OhMyZshDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/stefc.zsh-theme", config_dir_str),
-                destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
-                installer_name: "oh-my-zsh"
-            },
+            &YaziDetector as &dyn AppDetector,
+            vec![
+                SymlinkConfig {
+                    source: format!("{}/yazi.theme.toml", config_dir_str),
+                    destination: "~/.config/yazi/theme.toml",
+                    installer_name: "Yazi"
+                },
+            ],
         ),
         (
-            Box::new(VSCodeDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/code.settings.json", config_dir_str),
-                destination: "~/Library/Application Support/Code/User/settings.json",
-                installer_name: "Visual Studio Code"
-            },
-        ),
-        (
-            Box::new(YaziDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/yazi.theme.toml", config_dir_str),
-                destination: "~/.config/yazi/theme.toml",
-                installer_name: "Yazi"
-            },
-        ),
-        (
-            Box::new(HelixDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/helix.config.toml", config_dir_str),
-                destination: "~/.config/helix/config.toml",
-                installer_name: "Helix"
-            },
-        ),
-        (
-            Box::new(HelixDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/helix-theme/warm-burnout-light.toml", config_dir_str),
-                destination: "~/.config/helix/themes/warm-burnout-light.toml",
-                installer_name: "Helix-Warm Burnout"
-            },
-        ),
-        (
-            Box::new(HelixDetector) as Box<dyn AppDetector>,
-            SymlinkConfig {
-                source: format!("{}/helix-theme/warm-burnout-dark.toml", config_dir_str),
-                destination: "~/.config/helix/themes/warm-burnout-dark.toml",
-                installer_name: "Helix-Warm Burnout"
-            },
+            &HelixDetector as &dyn AppDetector,
+            vec![
+                SymlinkConfig {
+                    source: format!("{}/helix.config.toml", config_dir_str),
+                    destination: "~/.config/helix/config.toml",
+                    installer_name: "Helix"
+                },
+                SymlinkConfig {
+                    source: format!("{}/helix-theme/warm-burnout-light.toml", config_dir_str),
+                    destination: "~/.config/helix/themes/warm-burnout-light.toml",
+                    installer_name: "Helix-Warm Burnout"
+                },
+                SymlinkConfig {
+                    source: format!("{}/helix-theme/warm-burnout-dark.toml", config_dir_str),
+                    destination: "~/.config/helix/themes/warm-burnout-dark.toml",
+                    installer_name: "Helix-Warm Burnout"
+                },
+            ],
         )
     ];
 
     let mut affected = 0usize;
-    for (detector, config) in configs {
+    for (detector, symlinks) in configs {
         if detector.is_installed() {
-            symlink_creator.create(&config)?;
-            logger.ok_with_highlight(
-                "Symlink created successfully",
-                &config.destination,
-            );
-            affected += 1;
+            for config in symlinks {
+                symlink_creator.create(&config)?;
+                logger.ok_with_highlight(
+                    "Symlink created successfully",
+                    &config.destination,
+                );
+                affected += 1;
+            }
         } else {
-            logger.warn(&format!(
-                "{} is not installed, skipping {} config symlink creation.",
-                detector.name(),
-                config.installer_name
-            ));
+            for config in symlinks {
+                logger.warn(&format!(
+                    "{} is not installed, skipping {} config symlink creation.",
+                    detector.name(),
+                    config.installer_name
+                ));
+            }
         }
     }
 
