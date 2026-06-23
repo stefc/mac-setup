@@ -60,15 +60,8 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         println!("cargo:rerun-if-changed=config/{}", asset_name);
 
         // Perform the copy and provide feedback.
-        let copied = copy_if_newer(&source_path, &dest_path)
+        let _copied = copy_if_newer(&source_path, &dest_path)
             .expect(&format!("Failed to check or copy asset {}", asset_name));
-
-        if !copied {
-            println!(
-                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
-                asset_name
-            );
-        }
     }
 
     const HELIX_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
@@ -77,15 +70,8 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         let dest_path = config_dest.join("helix-theme").join(asset_name);
 
         // Perform the copy and provide feedback.
-        let copied = copy_if_newer(&source_path, &dest_path)
+        let _copied = copy_if_newer(&source_path, &dest_path)
             .expect(&format!("Failed to check or copy asset {}", asset_name));
-
-        if !copied {
-            println!(
-                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
-                asset_name
-            );
-        }
     }
     const WEZTERM_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
     for &asset_name in WEZTERM_ASSETS {
@@ -93,15 +79,8 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         let dest_path = config_dest.join("wezterm-theme").join(asset_name);
 
         // Perform the copy and provide feedback.
-        let copied = copy_if_newer(&source_path, &dest_path)
+        let _copied = copy_if_newer(&source_path, &dest_path)
             .expect(&format!("Failed to check or copy asset {}", asset_name));
-
-        if !copied {
-            println!(
-                "cargo:warning=Skipped copying {}; destination is newer or source is missing",
-                asset_name
-            );
-        }
     }
 
     Ok(())
@@ -111,7 +90,7 @@ fn get_modified_time(path: &Path) -> io::Result<SystemTime> {
     Ok(fs::metadata(path)?.modified()?)
 }
 
-fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
+fn copy_if_newer(source: &PathBuf, dest: &PathBuf) -> io::Result<bool> {
     if !source.exists() {
         return Ok(false);
     }

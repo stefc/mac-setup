@@ -50,49 +50,29 @@ esac
 # Override these settings in your ~/.zshrc
 
 # Current working directory
-: ${AGNOSTER_DIR_FG:=${CURRENT_FG}}
-: ${AGNOSTER_DIR_BG:=blue}
+: ${AGNOSTER_DIR_FG:='#3a3630'}
+: ${AGNOSTER_DIR_BG:='#90aec0'}
 
 # user@host
 : ${AGNOSTER_CONTEXT_FG:=${CURRENT_DEFAULT_FG}}
 : ${AGNOSTER_CONTEXT_BG:=black}
 
 # Git related
-: ${AGNOSTER_GIT_CLEAN_FG:=${CURRENT_FG}}
-: ${AGNOSTER_GIT_CLEAN_BG:=green}
-: ${AGNOSTER_GIT_DIRTY_FG:=black}
-: ${AGNOSTER_GIT_DIRTY_BG:=yellow}
-
-# Bazaar related
-: ${AGNOSTER_BZR_CLEAN_FG:=${CURRENT_FG}}
-: ${AGNOSTER_BZR_CLEAN_BG:=green}
-: ${AGNOSTER_BZR_DIRTY_FG:=black}
-: ${AGNOSTER_BZR_DIRTY_BG:=yellow}
-
-# Mercurial related
-: ${AGNOSTER_HG_NEWFILE_FG:=white}
-: ${AGNOSTER_HG_NEWFILE_BG:=red}
-: ${AGNOSTER_HG_CHANGED_FG:=black}
-: ${AGNOSTER_HG_CHANGED_BG:=yellow}
-: ${AGNOSTER_HG_CLEAN_FG:=${CURRENT_FG}}
-: ${AGNOSTER_HG_CLEAN_BG:=green}
+: ${AGNOSTER_GIT_CLEAN_FG:='#3a3630'}
+: ${AGNOSTER_GIT_CLEAN_BG:='#b4bc78'}
+: ${AGNOSTER_GIT_DIRTY_FG:='#3a3630'}
+: ${AGNOSTER_GIT_DIRTY_BG:='#ffb454'}
 
 # VirtualEnv colors
 : ${AGNOSTER_VENV_FG:=black}
 : ${AGNOSTER_VENV_BG:=blue}
 
-# AWS Profile colors
-: ${AGNOSTER_AWS_PROD_FG:=yellow}
-: ${AGNOSTER_AWS_PROD_BG:=red}
-: ${AGNOSTER_AWS_FG:=black}
-: ${AGNOSTER_AWS_BG:=green}
-
 # Status symbols
-: ${AGNOSTER_STATUS_RETVAL_FG:=red}
+: ${AGNOSTER_STATUS_RETVAL_FG:='#b03434'}
 : ${AGNOSTER_STATUS_ROOT_FG:=yellow}
 : ${AGNOSTER_STATUS_JOB_FG:=cyan}
 : ${AGNOSTER_STATUS_FG:=${CURRENT_DEFAULT_FG}}
-: ${AGNOSTER_STATUS_BG:=black}
+: ${AGNOSTER_STATUS_BG:='#3a3630'}
 
 ## Non-Color settings - set to 'true' to enable
 # Show the actual numeric return value rather than a cross symbol.

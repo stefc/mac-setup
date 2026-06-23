@@ -38,7 +38,7 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
         (
             &OhMyZshDetector as &dyn AppDetector,
             vec![SymlinkConfig {
-                source: config_dir.join("{}/stefc.zsh-theme"),
+                source: config_dir.join("stefc.zsh-theme"),
                 destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
                 installer_name: "oh-my-zsh",
             }],
@@ -46,7 +46,7 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
         (
             &VSCodeDetector as &dyn AppDetector,
             vec![SymlinkConfig {
-                source: config_dir.join("{}/code.settings.json"),
+                source: config_dir.join("code.settings.json"),
                 destination: "~/Library/Application Support/Code/User/settings.json",
                 installer_name: "Visual Studio Code",
             }],
@@ -54,7 +54,7 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
         (
             &YaziDetector as &dyn AppDetector,
             vec![SymlinkConfig {
-                source: config_dir.join("{}/yazi.theme.toml"),
+                source: config_dir.join("yazi.theme.toml"),
                 destination: "~/.config/yazi/theme.toml",
                 installer_name: "Yazi",
             }],
@@ -63,17 +63,17 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
             &HelixDetector as &dyn AppDetector,
             vec![
                 SymlinkConfig {
-                    source: config_dir.join("{}/helix.config.toml"),
+                    source: config_dir.join("helix.config.toml"),
                     destination: "~/.config/helix/config.toml",
                     installer_name: "Helix",
                 },
                 SymlinkConfig {
-                    source: config_dir.join("{}/helix-theme/warm-burnout-light.toml"),
+                    source: config_dir.join("helix-theme/warm-burnout-light.toml"),
                     destination: "~/.config/helix/themes/warm-burnout-light.toml",
                     installer_name: "Helix-Warm Burnout",
                 },
                 SymlinkConfig {
-                    source: config_dir.join("{}/helix-theme/warm-burnout-dark.toml"),
+                    source: config_dir.join("helix-theme/warm-burnout-dark.toml"),
                     destination: "~/.config/helix/themes/warm-burnout-dark.toml",
                     installer_name: "Helix-Warm Burnout",
                 },
@@ -107,10 +107,11 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
 
 fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let dest_escaped = config.destination.replace(" ", "\\ ");
+    let src_escaped = config.source.display().to_string().replace(" ", "\\ ");
     let command = format!(
         "mkdir -p $(dirname {}) && ln -fsv {} {}",
         dest_escaped,
-        config.source.display(),
+        src_escaped,
         dest_escaped
     );
 

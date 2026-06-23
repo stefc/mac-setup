@@ -3,7 +3,7 @@
 pub mod setup;
 
 pub use crate::common::{SetupError, SetupResult};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Configuration for a symlink setup task
 #[derive(Clone)]
