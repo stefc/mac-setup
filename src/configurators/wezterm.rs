@@ -18,7 +18,7 @@ impl Configurator for WeztermConfigurator {
         true
     }
 
-    fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
+    fn configure(&self, _: &mut dyn Log) -> SetupResult<()> {
 
         if !WezTermDetector.is_installed() {
             return Ok(());
