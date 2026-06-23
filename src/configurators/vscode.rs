@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use crate::common::Log;
 use crate::configurators::Configurator;
 use crate::detectors::VSCodeDetector;
@@ -7,64 +8,44 @@ use crate::symlinks::SetupResult;
 /// Configurator to ensure some VS Code extensions are installed
 pub struct VscodeConfigurator;
 
-impl VscodeConfigurator {
-    fn is_installed(&self) -> bool {
-        VSCodeDetector.is_installed()
+fn extensions() -> HashSet<&'static str> {
+    HashSet::from([
+        "github.copilot-chat",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "pflannery.vscode-versionlens",
+        "rust-lang.rust-analyzer",
+        "vadimcn.vscode-lldb",
+        "felip3fdl.warm-burnout",
+        "isudox.vscode-jetbrains-keybindings",
+    ])
+}
+
+impl Configurator for VscodeConfigurator {
+    fn name(&self) -> &'static str {
+        "VSCode"
     }
 
-    /// Get currently installed VS Code extensions (cached from a single CLI call)
-    fn installed_extensions(&self) -> Option<std::collections::HashSet<String>> {
-        match crate::common::run_command("code", &["--list-extensions"]) {
-            Ok(Some(stdout)) => {
-                let set = stdout
-                    .lines()
-                    .map(|l| l.trim().to_string())
-                    .collect::<std::collections::HashSet<String>>();
-                Some(set)
-            }
-            _ => None,
+    fn should_run(&self) -> bool {
+        if !VSCodeDetector.is_installed() {
+            return false;
         }
+        let installed = installed_extensions().unwrap_or_default();
+        let expected = extensions();
+        expected.difference(&installed).next().is_some()
     }
 
-    /// List of extensions to ensure installed. Update this list as needed.
-    fn extensions(&self) -> Vec<&'static str> {
-        vec![
-            "github.copilot-chat",
-            "ms-dotnettools.csdevkit",
-            "ms-dotnettools.csharp",
-            "ms-dotnettools.vscode-dotnet-runtime",
-            "pflannery.vscode-versionlens",
-            "rust-lang.rust-analyzer",
-            "vadimcn.vscode-lldb",
-            "felip3fdl.warm-burnout",
-            "isudox.vscode-jetbrains-keybindings",
-        ]
-    }
-
-    /// Check whether an extension is already installed using a pre-fetched set
-    fn is_extension_installed_in_set(
-        &self,
-        set: &std::collections::HashSet<String>,
-        ext: &str,
-    ) -> bool {
-        set.contains(ext)
-    }
-
-    fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        // Ensure `code` CLI is available. If not, we try to proceed but will error when executing.
-        if !self.is_installed() {
+    fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
+        if !VSCodeDetector.is_installed() {
             return Ok(());
         }
 
-        // Buffer installed extensions to avoid repeated CLI calls
-        let installed = self.installed_extensions().unwrap_or_default();
+        let actual = installed_extensions().unwrap_or_default();
+        let expected = extensions();
+        let missed = expected.difference(&actual);
 
-        for ext in self.extensions() {
-            if self.is_extension_installed_in_set(&installed, ext) {
-                logger.info(&format!("Extension already installed: {}", ext));
-                continue;
-            }
-
+        for ext in missed {
             logger.info(&format!("Installing VS Code extension: {}", ext));
             match crate::common::run_command("code", &["--install-extension", ext]) {
                 Ok(Some(_)) => logger.ok_with_highlight("Install extension ->", ext),
@@ -77,33 +58,25 @@ impl VscodeConfigurator {
                 Err(e) => return Err(crate::common::SetupError::Io(e)),
             }
         }
-
         Ok(())
-    }
-}
-
-impl Configurator for VscodeConfigurator {
-    fn name(&self) -> &'static str {
-        "VSCode"
-    }
-
-    fn should_run(&self) -> bool {
-        if !self.is_installed() {
-            return false;
-        }
-        // Run if at least one extension is missing, using a single buffered list
-        let installed = self.installed_extensions().unwrap_or_default();
-        self.extensions()
-            .into_iter()
-            .any(|e| !self.is_extension_installed_in_set(&installed, e))
-    }
-
-    fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        self.run_configure(logger)
     }
 
     fn affected_files(&self) -> Vec<String> {
         // VS Code changes user extensions; no specific file path returned here
         Vec::new()
+    }
+}
+
+fn installed_extensions() -> Option<HashSet<&'static str>> {
+    match crate::common::run_command("code", &["--list-extensions"]) {
+        Ok(Some(stdout)) => {
+            let stdout_leak: &'static str = Box::leak(stdout.into_boxed_str());
+            let set = stdout_leak
+                .lines()
+                .map(|l| l.trim())
+                .collect::<HashSet<&'static str>>();
+            Some(set)
+        }
+        _ => None,
     }
 }
