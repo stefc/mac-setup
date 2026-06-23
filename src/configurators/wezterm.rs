@@ -1,8 +1,8 @@
 use crate::common::Log;
 use crate::configurators::Configurator;
-use crate::symlinks::SetupResult;
-use crate::detectors::wezterm::WezTermDetector;
 use crate::detectors::app_detector::AppDetector;
+use crate::detectors::wezterm::WezTermDetector;
+use crate::symlinks::SetupResult;
 
 pub struct WeztermConfigurator;
 
@@ -16,7 +16,6 @@ impl WeztermConfigurator {
         if !self.is_installed() {
             return Ok(());
         }
-
 
         Ok(())
     }

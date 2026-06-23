@@ -1,8 +1,8 @@
 use crate::common::Log;
 use crate::configurators::Configurator;
-use crate::symlinks::SetupResult;
 use crate::detectors::VSCodeDetector;
 use crate::detectors::app_detector::AppDetector;
+use crate::symlinks::SetupResult;
 
 /// Configurator to ensure some VS Code extensions are installed
 pub struct VscodeConfigurator;
@@ -37,12 +37,16 @@ impl VscodeConfigurator {
             "rust-lang.rust-analyzer",
             "vadimcn.vscode-lldb",
             "felip3fdl.warm-burnout",
-            "isudox.vscode-jetbrains-keybindings"
+            "isudox.vscode-jetbrains-keybindings",
         ]
     }
 
     /// Check whether an extension is already installed using a pre-fetched set
-    fn is_extension_installed_in_set(&self, set: &std::collections::HashSet<String>, ext: &str) -> bool {
+    fn is_extension_installed_in_set(
+        &self,
+        set: &std::collections::HashSet<String>,
+        ext: &str,
+    ) -> bool {
         set.contains(ext)
     }
 
@@ -63,9 +67,12 @@ impl VscodeConfigurator {
 
             logger.info(&format!("Installing VS Code extension: {}", ext));
             match crate::common::run_command("code", &["--install-extension", ext]) {
-                Ok(Some(_)) =>  logger.ok_with_highlight("Install extension ->", ext),
+                Ok(Some(_)) => logger.ok_with_highlight("Install extension ->", ext),
                 Ok(None) => {
-                    return Err(crate::common::SetupError::CommandFailed { command: format!("code --install-extension {}", ext), exit_code: None });
+                    return Err(crate::common::SetupError::CommandFailed {
+                        command: format!("code --install-extension {}", ext),
+                        exit_code: None,
+                    });
                 }
                 Err(e) => return Err(crate::common::SetupError::Io(e)),
             }
@@ -86,7 +93,9 @@ impl Configurator for VscodeConfigurator {
         }
         // Run if at least one extension is missing, using a single buffered list
         let installed = self.installed_extensions().unwrap_or_default();
-        self.extensions().into_iter().any(|e| !self.is_extension_installed_in_set(&installed, e))
+        self.extensions()
+            .into_iter()
+            .any(|e| !self.is_extension_installed_in_set(&installed, e))
     }
 
     fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {

@@ -1,5 +1,5 @@
-use std::env;
 use crate::detectors::app_detector::AppDetector;
+use std::env;
 
 /// Detects if oh-my-zsh is installed
 pub struct OhMyZshDetector;

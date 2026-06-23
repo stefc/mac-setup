@@ -1,10 +1,10 @@
-pub mod macos;
 pub mod linux;
+pub mod macos;
 pub mod windows;
 
-pub use crate::common::{Platform, SetupResult, Log};
-pub use macos::MacOSSettings;
+pub use crate::common::{Log, Platform, SetupResult};
 pub use linux::LinuxSettings;
+pub use macos::MacOSSettings;
 pub use windows::WindowsSettings;
 
 pub trait SystemSettings {

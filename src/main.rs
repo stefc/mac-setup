@@ -6,9 +6,9 @@ mod detectors;
 mod environment;
 mod settings;
 mod symlinks;
-use common::{render_ui, Log, MemoryLogger, Platform};
+use common::{Log, MemoryLogger, Platform, render_ui};
 use settings::apply_system_settings;
-use symlinks::{setup, SetupResult};
+use symlinks::{SetupResult, setup};
 
 fn main() {
     let mut logger = MemoryLogger::default();
@@ -35,4 +35,3 @@ fn execute(logger: &mut dyn Log) -> SetupResult<()> {
 
     Ok(())
 }
-

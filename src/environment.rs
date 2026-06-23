@@ -1,4 +1,4 @@
-use crate::common::{replace_home_with_tilde, Log, Platform};
+use crate::common::{Log, Platform, replace_home_with_tilde};
 use std::env;
 
 pub fn log_environment_info(logger: &mut dyn Log, platform: &Platform) {

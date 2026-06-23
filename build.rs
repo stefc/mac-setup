@@ -20,14 +20,20 @@ fn run() -> io::Result<()> {
 /// Finds the Cargo `target` directory path from the `OUT_DIR` environment variable.
 /// Cargo sets `OUT_DIR` to a path like `.../target/debug/build/<pkg-name>-<hash>/out`.
 fn find_target_dir() -> io::Result<PathBuf> {
-    let out_dir = env::var("OUT_DIR")
-        .map_err(|_| io::Error::new(io::ErrorKind::Other, "OUT_DIR environment variable not set"))?;
+    let out_dir = env::var("OUT_DIR").map_err(|_| {
+        io::Error::new(io::ErrorKind::Other, "OUT_DIR environment variable not set")
+    })?;
 
     Path::new(&out_dir)
         .ancestors()
         .nth(3) // Traverse up three levels: out -> build -> profile -> target
         .map(PathBuf::from)
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Failed to determine target directory from OUT_DIR"))
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                "Failed to determine target directory from OUT_DIR",
+            )
+        })
 }
 
 /// Prepares runtime configuration assets.
@@ -39,7 +45,11 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
 
     // List of assets to be copied from `config/` in the project root.
     const ASSETS: &[&str] = &[
-        ".wezterm.lua", "stefc.zsh-theme", "code.settings.json", "yazi.theme.toml", "helix.config.toml"
+        ".wezterm.lua",
+        "stefc.zsh-theme",
+        "code.settings.json",
+        "yazi.theme.toml",
+        "helix.config.toml",
     ];
 
     for &asset_name in ASSETS {
@@ -109,11 +119,11 @@ fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     let should_copy = if !dest.exists() {
         true
     } else {
-        let src_time = get_modified_time(source)
-            .expect("Failed to get modification time for source");
+        let src_time =
+            get_modified_time(source).expect("Failed to get modification time for source");
 
-        let dest_time = get_modified_time(dest)
-            .expect("Failed to get modification time for destination");
+        let dest_time =
+            get_modified_time(dest).expect("Failed to get modification time for destination");
         src_time > dest_time
     };
 

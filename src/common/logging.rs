@@ -1,11 +1,11 @@
 use std::io;
 
+use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
-use ratatui::Terminal;
 
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
@@ -45,17 +45,32 @@ pub enum LogLevel {
 
 impl Log for MemoryLogger {
     fn info(&mut self, msg: &str) {
-        self.lines.push(LogLine { level: LogLevel::Info, msg: msg.to_string(), highlight: None });
+        self.lines.push(LogLine {
+            level: LogLevel::Info,
+            msg: msg.to_string(),
+            highlight: None,
+        });
     }
     fn warn(&mut self, msg: &str) {
-        self.lines.push(LogLine { level: LogLevel::Warn, msg: msg.to_string(), highlight: None });
+        self.lines.push(LogLine {
+            level: LogLevel::Warn,
+            msg: msg.to_string(),
+            highlight: None,
+        });
     }
     fn ok_with_highlight(&mut self, msg: &str, highlight: &str) {
-        self.lines.push(LogLine { level: LogLevel::Ok, msg: msg.to_string(), highlight: Some(highlight.to_string()) });
+        self.lines.push(LogLine {
+            level: LogLevel::Ok,
+            msg: msg.to_string(),
+            highlight: Some(highlight.to_string()),
+        });
     }
 
     fn add_group(&mut self, title: &str, affected_count: usize) {
-        self.groups.push(GroupSummary { title: title.to_string(), affected_count });
+        self.groups.push(GroupSummary {
+            title: title.to_string(),
+            affected_count,
+        });
     }
 
     fn snapshot(&self) -> LogSnapshot {
@@ -97,7 +112,12 @@ fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>)
 
     // Title
     let title = Paragraph::new(Line::from(vec![
-        Span::styled("mac-setup", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+        Span::styled(
+            "mac-setup",
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        ),
         Span::raw(" — Setup Summary"),
     ]))
     .block(Block::default().borders(Borders::ALL));
@@ -116,14 +136,18 @@ fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>)
             let mut spans: Vec<Span> = vec![Span::styled(l.msg.clone(), base_style)];
             if let Some(h) = &l.highlight {
                 spans.push(Span::raw(" "));
-                spans.push(Span::styled(h.clone(), Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)));
+                spans.push(Span::styled(
+                    h.clone(),
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ));
             }
             ListItem::new(Line::from(spans))
         })
         .collect();
 
-    let list = List::new(items)
-        .block(Block::default().title("Steps").borders(Borders::ALL));
+    let list = List::new(items).block(Block::default().title("Steps").borders(Borders::ALL));
     f.render_widget(list, chunks[1]);
 
     // Summary
@@ -140,7 +164,6 @@ fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>)
             format!("Summary — {}", summary_parts.join(" · "))
         }
     };
-    let footer = Paragraph::new(footer_text)
-        .block(Block::default().borders(Borders::ALL));
+    let footer = Paragraph::new(footer_text).block(Block::default().borders(Borders::ALL));
     f.render_widget(footer, chunks[2]);
 }

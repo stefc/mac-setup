@@ -22,11 +22,15 @@ impl SystemSettings for MacOSSettings {
 }
 
 impl MacOSSettings {
-
     fn activate_settings(&self) -> Result<(), String> {
-        match crate::common::run_command("/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings", &["-u"]) {
+        match crate::common::run_command(
+            "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings",
+            &["-u"],
+        ) {
             Ok(Some(_stdout)) => Ok(()),
-            Ok(None) => Err("Failed to activate settings: command returned non-zero status".to_string()),
+            Ok(None) => {
+                Err("Failed to activate settings: command returned non-zero status".to_string())
+            }
             Err(e) => Err(format!("Failed to activate settings: {}", e)),
         }
     }
@@ -40,7 +44,10 @@ impl MacOSSettings {
         let bool_str = if value { "true" } else { "false" };
         match crate::common::run_command("defaults", &["write", domain, key, "-bool", bool_str]) {
             Ok(Some(_)) => Ok(()),
-            Ok(None) => Err(format!("Failed to set {} {}: command returned non-zero status", domain, key)),
+            Ok(None) => Err(format!(
+                "Failed to set {} {}: command returned non-zero status",
+                domain, key
+            )),
             Err(e) => Err(format!("Failed to set {} {}: {}", domain, key, e)),
         }
     }
@@ -49,7 +56,10 @@ impl MacOSSettings {
         let bool_str = if value { "true" } else { "false" };
         match crate::common::run_command("defaults", &["write", "-g", key, "-bool", bool_str]) {
             Ok(Some(_)) => Ok(()),
-            Ok(None) => Err(format!("Failed to set mouse {}: command returned non-zero status", key)),
+            Ok(None) => Err(format!(
+                "Failed to set mouse {}: command returned non-zero status",
+                key
+            )),
             Err(e) => Err(format!("Failed to set mouse {}: {}", key, e)),
         }
     }

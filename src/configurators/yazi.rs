@@ -1,7 +1,7 @@
-use crate::detectors::{YaziDetector, app_detector::AppDetector};
-use crate::symlinks::{SetupResult, SetupError};
-use crate::configurators::Configurator;
 use crate::common::Log;
+use crate::configurators::Configurator;
+use crate::detectors::{YaziDetector, app_detector::AppDetector};
+use crate::symlinks::{SetupError, SetupResult};
 
 /// Configurator for Yazi file manager
 pub struct YaziConfigurator;
@@ -22,13 +22,13 @@ impl YaziConfigurator {
     /// Configure Yazi by installing the everforest-medium theme package
     fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
         let package_name = "Chromium-3-Oxide/everforest-medium";
-        
+
         // Check if the package is already installed
         if self.is_package_installed(package_name) {
             logger.info(&format!("Yazi package already installed: {}", package_name));
             return Ok(());
         }
-        
+
         // Run the command to install the everforest-medium package
         match crate::common::run_command("ya", &["pkg", "add", package_name]) {
             Ok(Some(_)) => {
@@ -40,13 +40,13 @@ impl YaziConfigurator {
                     "Failed to add Yazi package: command returned non-zero status",
                 )));
             }
-            Err(e) => return Err(SetupError::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Failed to execute 'ya pkg add': {}", e),
-            ))),
+            Err(e) => {
+                return Err(SetupError::Io(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Failed to execute 'ya pkg add': {}", e),
+                )));
+            }
         }
-
-
 
         Ok(())
     }

@@ -1,13 +1,13 @@
-pub mod zshrc;
-pub mod yazi;
 pub mod vscode;
 pub mod wezterm;
+pub mod yazi;
+pub mod zshrc;
 
-pub use zshrc::ZshrcConfigurator;
-pub use yazi::YaziConfigurator;
+use crate::{common::Log, symlinks::SetupResult};
 pub use vscode::VscodeConfigurator;
 pub use wezterm::WeztermConfigurator;
-use crate::{symlinks::SetupResult, common::Log};
+pub use yazi::YaziConfigurator;
+pub use zshrc::ZshrcConfigurator;
 
 pub trait Configurator {
     fn name(&self) -> &'static str;
@@ -24,7 +24,9 @@ pub trait Configurator {
         self.configure(logger)
     }
 
-    fn affected_files(&self) -> Vec<String> { Vec::new() }
+    fn affected_files(&self) -> Vec<String> {
+        Vec::new()
+    }
 }
 
 pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
@@ -37,7 +39,6 @@ pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
     ];
     let mut affected = 0usize;
     for configurator in configurators {
-
         configurator.run(logger)?;
         let files = configurator.affected_files();
         for file in files {

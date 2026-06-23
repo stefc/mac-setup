@@ -1,9 +1,9 @@
+use crate::common::{Log, replace_home_with_tilde};
+use crate::configurators::Configurator;
+use crate::symlinks::SetupResult;
+use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::env;
-use crate::common::{Log, replace_home_with_tilde};
-use crate::symlinks::SetupResult;
-use crate::configurators::Configurator;
 
 /// Configurator for .zshrc file
 pub struct ZshrcConfigurator {
@@ -17,10 +17,7 @@ impl Default for ZshrcConfigurator {
         Self {
             theme: "stefc",
             plugins: &["z", "gh"],
-            env_vars: &[
-                ("HOMEBREW_NO_AUTO_UPDATE", "1"),
-                ("EDITOR","hx")
-            ],
+            env_vars: &[("HOMEBREW_NO_AUTO_UPDATE", "1"), ("EDITOR", "hx")],
         }
     }
 }
@@ -34,7 +31,12 @@ impl ZshrcConfigurator {
                 path.push(".zshrc");
                 path
             })
-            .ok_or_else(|| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "HOME environment variable not set")))
+            .ok_or_else(|| {
+                crate::common::SetupError::Io(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "HOME environment variable not set",
+                ))
+            })
     }
 
     /// Check if .zshrc exists
@@ -51,17 +53,29 @@ impl ZshrcConfigurator {
         println!("Configuring .zshrc at {:?}...", zshrc_path);
 
         // Read the current content
-        let content = fs::read_to_string(&zshrc_path)
-            .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to read .zshrc: {}", e))))?;
+        let content = fs::read_to_string(&zshrc_path).map_err(|e| {
+            crate::common::SetupError::Io(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Failed to read .zshrc: {}", e),
+            ))
+        })?;
 
         // Modify the content
-        let new_content = self.modify_zshrc_content(&content, &self.theme, self.plugins, self.env_vars);
+        let new_content =
+            self.modify_zshrc_content(&content, &self.theme, self.plugins, self.env_vars);
 
         // Write back to disk
-        fs::write(&zshrc_path, new_content)
-            .map_err(|e| crate::common::SetupError::Io(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to write .zshrc: {}", e))))?;
+        fs::write(&zshrc_path, new_content).map_err(|e| {
+            crate::common::SetupError::Io(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                format!("Failed to write .zshrc: {}", e),
+            ))
+        })?;
 
-        logger.ok_with_highlight("Configured .zshrc at ->", &replace_home_with_tilde(&zshrc_path));
+        logger.ok_with_highlight(
+            "Configured .zshrc at ->",
+            &replace_home_with_tilde(&zshrc_path),
+        );
 
         println!(".zshrc configured successfully");
         println!("  - Theme set to: {}", self.theme);
@@ -74,7 +88,13 @@ impl ZshrcConfigurator {
     }
 
     /// Modify the .zshrc content by updating theme, plugins, and adding environment variables
-    fn modify_zshrc_content(&self, content: &str, theme: &str, plugins_to_add: &[&str], env_vars: &[(&str, &str)]) -> String {
+    fn modify_zshrc_content(
+        &self,
+        content: &str,
+        theme: &str,
+        plugins_to_add: &[&str],
+        env_vars: &[(&str, &str)],
+    ) -> String {
         let mut lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
 
         // Update or add ZSH_THEME
@@ -88,7 +108,8 @@ impl ZshrcConfigurator {
             let export_line = format!("export {}={}", key, value);
             if !lines.iter().any(|line| {
                 let trimmed = line.trim();
-                trimmed.starts_with(&format!("export {}", key)) || trimmed.starts_with(&format!("{}=", key))
+                trimmed.starts_with(&format!("export {}", key))
+                    || trimmed.starts_with(&format!("{}=", key))
             }) {
                 lines.push(String::new()); // Add blank line for readability
                 lines.push(format!("# Added by mac-setup"));
@@ -133,10 +154,13 @@ impl ZshrcConfigurator {
         } else {
             // If plugins line doesn't exist, create it with the new plugins
             let plugins_line = format!("plugins=({})", plugins_to_add.join(" "));
-            let insert_pos = lines.iter().position(|line| {
-                let trimmed = line.trim();
-                !trimmed.is_empty() && !trimmed.starts_with('#')
-            }).unwrap_or(0);
+            let insert_pos = lines
+                .iter()
+                .position(|line| {
+                    let trimmed = line.trim();
+                    !trimmed.is_empty() && !trimmed.starts_with('#')
+                })
+                .unwrap_or(0);
 
             lines.insert(insert_pos, plugins_line);
         }
@@ -152,10 +176,13 @@ impl ZshrcConfigurator {
             lines[pos] = new_line.to_string();
         } else {
             // If not found, add it (we'll add it before the first non-comment, non-empty line if possible)
-            let insert_pos = lines.iter().position(|line| {
-                let trimmed = line.trim();
-                !trimmed.is_empty() && !trimmed.starts_with('#')
-            }).unwrap_or(0);
+            let insert_pos = lines
+                .iter()
+                .position(|line| {
+                    let trimmed = line.trim();
+                    !trimmed.is_empty() && !trimmed.starts_with('#')
+                })
+                .unwrap_or(0);
 
             lines.insert(insert_pos, new_line.to_string());
         }
