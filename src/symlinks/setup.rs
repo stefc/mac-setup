@@ -105,24 +105,34 @@ fn get_symlinks_for_app(app_name: &str, config_dir: &Path) -> Vec<SymlinkConfig>
 }
 
 fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
-    let dest_escaped = config.destination.replace(" ", "\\ ");
-    let src_escaped = config.source.display().to_string().replace(" ", "\\ ");
-    let command = format!(
-        "mkdir -p $(dirname {}) && ln -fsv {} {}",
-        dest_escaped, src_escaped, dest_escaped
-    );
-
-    match crate::common::run_command("sh", &["-c", &command]) {
-        Ok(Some(stdout)) => {
-            if !stdout.is_empty() {
-                print!("{}", stdout);
-            }
-            Ok(())
+    let dest_str = config.destination;
+    // Expand tilde to actual home directory for file system operations
+    let dest_expanded = if let Some(stripped) = dest_str.strip_prefix("~/") {
+        if let Some(home_dir) = std::env::var_os("HOME") {
+            std::path::Path::new(&home_dir).join(stripped)
+        } else {
+            std::path::PathBuf::from(dest_str)
         }
-        Ok(None) => Err(crate::common::SetupError::CommandFailed {
-            command,
-            exit_code: None,
-        }),
+    } else {
+        std::path::PathBuf::from(dest_str)
+    };
+
+    if let Some(parent) = dest_expanded.parent() {
+        if !parent.exists() {
+            if let Err(e) = std::fs::create_dir_all(parent) {
+                return Err(crate::common::SetupError::Io(e));
+            }
+        }
+    }
+
+    if dest_expanded.exists() || dest_expanded.is_symlink() {
+        if let Err(e) = std::fs::remove_file(&dest_expanded) {
+            return Err(crate::common::SetupError::Io(e));
+        }
+    }
+
+    match std::os::unix::fs::symlink(&config.source, &dest_expanded) {
+        Ok(_) => Ok(()),
         Err(e) => Err(crate::common::SetupError::Io(e)),
     }
 }
