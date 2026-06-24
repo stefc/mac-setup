@@ -174,3 +174,68 @@ impl Configurator for ZshrcConfigurator {
             .unwrap_or_default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn new_zsh_configurator() -> ZshrcConfigurator {
+        ZshrcConfigurator::default()
+    }
+
+    #[test]
+    fn test_extend_plugins_add_to_existing() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=(git zsh-syntax-highlighting)".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(git zsh-syntax-highlighting z gh)"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_add_with_duplicates() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=(git z)".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(git z gh)"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_no_existing_plugins_line() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["some line".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(z gh)", "some line"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_empty_initial_plugins() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=()".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(z gh)"]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_updates_existing() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["ZSH_THEME=\"old_theme\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["ZSH_THEME=\"new_theme\""]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_adds_new() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["some_other_line=\"value\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["ZSH_THEME=\"new_theme\"", "some_other_line=\"value\""]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_ignores_commented_line() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["# ZSH_THEME=\"old_theme\"".to_string(), "other_line=\"value\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["# ZSH_THEME=\"old_theme\"", "ZSH_THEME=\"new_theme\"", "other_line=\"value\""]);
+    }
+}
