@@ -3,16 +3,24 @@ use std::env;
 
 pub fn log_environment_info(logger: &mut dyn Log, platform: &Platform) {
     logger.info("▶ Environment");
+    let mut logged_items_count = 0;
+
     logger.ok_with_highlight("Detected platform ->", platform.as_str());
+    logged_items_count += 1;
+
     logger.ok_with_highlight("Current working directory ->", &current_working_directory());
+    logged_items_count += 1;
+
     logger.ok_with_highlight("Executable directory ->", &executable_directory());
+    logged_items_count += 1;
 
     // Display serial number for macOS
     if let Some(serial) = platform.get_serial_number() {
         logger.ok_with_highlight("Serial number ->", &serial);
+        logged_items_count += 1;
     }
 
-    logger.add_group("Environment", 0); // platform, cwd, exe
+    logger.add_group("Environment", logged_items_count);
 }
 
 /// Print current working directory with tilde substitution

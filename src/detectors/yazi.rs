@@ -1,6 +1,14 @@
-use crate::detectors::which::WhichDetector;
+use crate::detectors::app_detector::AppDetector;
+use crate::detectors::which::is_program_in_path;
 
-/// Detects if Yazi is installed (which-based detector)
-pub const YAZI_DETECTOR: WhichDetector = WhichDetector::new("yazi", "Yazi");
+pub struct YaziDetector;
 
-pub use YAZI_DETECTOR as YaziDetector;
+impl AppDetector for YaziDetector {
+    fn is_installed(&self) -> bool {
+        is_program_in_path("yazi")
+    }
+
+    fn name(&self) -> &'static str {
+        "Yazi"
+    }
+}

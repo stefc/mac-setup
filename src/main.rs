@@ -13,13 +13,10 @@ use symlinks::{SetupResult, setup};
 fn main() {
     let mut logger = MemoryLogger::default();
 
-    let res = execute(&mut logger);
-
-    // Render a simple Ratatui UI summarizing the outcome
+    let result = execute(&mut logger);
     let snapshot = logger.snapshot();
-    if let Err(e) = render_ui(&snapshot, res.as_ref().err().map(|e| e.to_string())) {
+    if let Err(e) = render_ui(&snapshot, result.as_ref().err().map(|e| e.to_string())) {
         eprintln!("Failed to render UI: {}", e);
-        std::process::exit(1);
     }
 }
 

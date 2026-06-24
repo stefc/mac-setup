@@ -31,18 +31,15 @@ pub fn create_platform_settings(platform: &Platform) -> Box<dyn SystemSettings> 
 /// Apply platform-specific system settings
 pub fn apply_system_settings(logger: &mut dyn Log, platform: &Platform) -> SetupResult<()> {
     logger.info("▶ Applying System Settings");
-    let settings = create_platform_settings(&platform);
+    let settings = create_platform_settings(platform);
     logger.info(&format!("Applying {}...", settings.name()));
 
-    match settings.apply() {
-        Ok(()) => {
-            logger.ok_with_highlight("System settings applied ->", settings.name());
-            logger.add_group("System Settings", 1);
-            Ok(())
-        }
-        Err(e) => {
-            logger.warn(&format!("Failed to apply system settings: {}", e));
-            Ok(()) // Don't fail the entire setup if settings fail
-        }
+    if let Err(e) = settings.apply() {
+        logger.warn(&format!("Failed to apply system settings: {}", e));
+    } else {
+        logger.ok_with_highlight("System settings applied ->", settings.name());
+        logger.add_group("System Settings", 1);
     }
+
+    Ok(()) // Don't fail the entire setup if settings fail
 }

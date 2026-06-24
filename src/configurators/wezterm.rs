@@ -12,17 +12,10 @@ impl Configurator for WeztermConfigurator {
     }
 
     fn should_run(&self) -> bool {
-        if !WezTermDetector.is_installed() {
-            return false;
-        }
-        true
+        WezTermDetector.is_installed()
     }
 
     fn configure(&self, _: &mut dyn Log) -> SetupResult<()> {
-        if !WezTermDetector.is_installed() {
-            return Ok(());
-        }
-
         Ok(())
     }
 

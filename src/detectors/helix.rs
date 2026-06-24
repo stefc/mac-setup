@@ -1,6 +1,14 @@
-use crate::detectors::which::WhichDetector;
+use crate::detectors::app_detector::AppDetector;
+use crate::detectors::which::is_program_in_path;
 
-/// Detects if Helix is installed (which-based detector)
-pub const HELIX_DETECTOR: WhichDetector = WhichDetector::new("hx", "Helix");
+pub struct HelixDetector;
 
-pub use HELIX_DETECTOR as HelixDetector;
+impl AppDetector for HelixDetector {
+    fn is_installed(&self) -> bool {
+        is_program_in_path("hx")
+    }
+
+    fn name(&self) -> &'static str {
+        "Helix"
+    }
+}

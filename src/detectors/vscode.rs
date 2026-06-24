@@ -1,7 +1,14 @@
-use crate::detectors::mac_app::MacAppDetector;
+use crate::detectors::app_detector::AppDetector;
+use crate::detectors::mac_app::is_mac_app_in_path;
 
-/// Detects if Yazi is installed (which-based detector)
-pub const VS_CODE_DETECTOR: MacAppDetector =
-    MacAppDetector::new("Visual Studio Code", "Visual Studio Code");
+pub struct VSCodeDetector;
 
-pub use VS_CODE_DETECTOR as VSCodeDetector;
+impl AppDetector for VSCodeDetector {
+    fn is_installed(&self) -> bool {
+        is_mac_app_in_path("Visual Studio Code")
+    }
+
+    fn name(&self) -> &'static str {
+        "Visual Studio Code"
+    }
+}
