@@ -47,16 +47,8 @@ impl Configurator for VscodeConfigurator {
 
         for ext in missed {
             logger.info(&format!("Installing VS Code extension: {}", ext));
-            match crate::common::run_command("code", &["--install-extension", ext]) {
-                Ok(Some(_)) => logger.ok_with_highlight("Install extension ->", ext),
-                Ok(None) => {
-                    return Err(crate::common::SetupError::CommandFailed {
-                        command: format!("code --install-extension {}", ext),
-                        exit_code: None,
-                    });
-                }
-                Err(e) => return Err(crate::common::SetupError::Io(e)),
-            }
+            crate::common::run_command("code", &["--install-extension", ext])?;
+            logger.ok_with_highlight("Install extension ->", ext);
         }
         Ok(())
     }
@@ -69,7 +61,7 @@ impl Configurator for VscodeConfigurator {
 
 fn installed_extensions() -> Option<HashSet<&'static str>> {
     match crate::common::run_command("code", &["--list-extensions"]) {
-        Ok(Some(stdout)) => {
+        Ok(stdout) => {
             let stdout_leak: &'static str = Box::leak(stdout.into_boxed_str());
             let set = stdout_leak
                 .lines()

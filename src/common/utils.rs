@@ -13,19 +13,22 @@ pub fn replace_home_with_tilde(path: &Path) -> String {
     path.display().to_string()
 }
 
-pub fn run_command(program: &str, args: &[&str]) -> Result<Option<String>, std::io::Error> {
+pub fn run_command(program: &str, args: &[&str]) -> super::SetupResult<String> {
     let mut cmd = Command::new(program);
     for arg in args {
         cmd.arg(arg);
     }
 
-    let output = cmd.output()?;
+    let output = cmd.output().map_err(super::SetupError::Io)?;
 
     if output.status.success() {
         let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        Ok(Some(stdout))
+        Ok(stdout)
     } else {
-        Ok(None)
+        Err(super::SetupError::CommandFailed {
+            command: format!("{} {}", program, args.join(" ")),
+            exit_code: output.status.code(),
+        })
     }
 }
 

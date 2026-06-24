@@ -39,17 +39,16 @@ impl Platform {
                 return None;
             }
 
-            // Prefer the small helper in `common::run_command` which returns
-            // Ok(Some(stdout)) when the command succeeded.
+            // Prefer the small helper in `common::run_command`
             match crate::common::run_command("ioreg", &["-l"]) {
-                Ok(Some(stdout)) => {
+                Ok(stdout) => {
                     // Look for: "IOPlatformSerialNumber" = "C02..."
                     let re = Regex::new(r#""IOPlatformSerialNumber""\s*=\s*"([^"]+)""#).ok()?;
                     re.captures(&stdout)
                         .and_then(|cap| cap.get(1))
                         .map(|m| m.as_str().to_string())
                 }
-                _ => None,
+                Err(_) => None,
             }
         }
     }
