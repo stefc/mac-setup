@@ -19,6 +19,7 @@ Your task is to review the provided codebase and identify opportunities to impro
     - Point out over-engineered abstractions or unnecessary custom implementations where standard library functions or simple language constructs would suffice.
     - Strip away cognitive noise and unnecessary boilerplate that obfuscates the core business logic.
     - Suggest idiomatic Rust simplifications (e.g., utilizing `Option`/`Result` combinators like `map`, `and_then`, `unwrap_or_else` instead of verbose `match` or `if let` blocks).
+    - Enforce importing types via `use` statements at the top of the file (e.g., `use crate::module::Type;`) instead of cluttering function signatures and variable declarations with fully-qualified absolute paths.
 
 3. **Reduction of Cyclomatic Complexity**:
     - Identify deeply nested control structures (e.g., nested `if`, `for`, `while` blocks) and suggest ways to flatten them.
