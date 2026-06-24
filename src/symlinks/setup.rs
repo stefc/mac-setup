@@ -112,17 +112,9 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
         dest_escaped, src_escaped, dest_escaped
     );
 
-    match crate::common::run_command("sh", &["-c", &command]) {
-        Ok(Some(stdout)) => {
-            if !stdout.is_empty() {
-                print!("{}", stdout);
-            }
-            Ok(())
-        }
-        Ok(None) => Err(crate::common::SetupError::CommandFailed {
-            command,
-            exit_code: None,
-        }),
-        Err(e) => Err(crate::common::SetupError::Io(e)),
+    let stdout = crate::common::run_command("sh", &["-c", &command])?;
+    if !stdout.is_empty() {
+        print!("{}", stdout);
     }
+    Ok(())
 }
