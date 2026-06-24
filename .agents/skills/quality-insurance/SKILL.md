@@ -41,6 +41,9 @@ Your task is to review the provided codebase and identify opportunities to impro
 6. **Design Patterns**:
     - Recommend idiomatic Rust patterns where applicable (e.g., the Typestate Pattern for compile-time state transitions, the Builder Pattern for complex struct initialization, the Newtype Pattern for type safety, or the Strategy Pattern using traits).
 
-7. **Actionable Output & Refactoring Format**:
+7. **Memory Management & Types**:
+    - Prefer using reference types (e.g., `&str`, `&[T]`) over boxed or owned types (e.g., `String`, `Vec<T>`, `Box<T>`) whenever ownership is not strictly required. This is especially important for data with a static lifetime (e.g., `&'static str`).
+
+8. **Actionable Output & Refactoring Format**:
     - Provide clear, constructive feedback explaining exactly *why* a change is necessary and how the original code is overly complex, redundant, or hard to read.
     - Provide concrete code improvements using the unified diff format with full absolute file paths to demonstrate exactly how the codebase should be modified.
