@@ -1,3 +1,4 @@
+use std::path::Path;
 use crate::detectors::app_detector::AppDetector;
 use crate::detectors::which::is_program_in_path;
 use crate::symlinks::SymlinkConfig;
@@ -9,11 +10,9 @@ impl AppDetector for HelixDetector {
         is_program_in_path("hx")
     }
 
-    fn name(&self) -> &'static str {
-        "Helix"
-    }
+    fn name(&self) -> &'static str { "Helix" }
 
-    fn symlinks(&self, config_dir: &std::path::Path) -> Vec<SymlinkConfig> {
+    fn symlinks(&self, config_dir: &Path) -> Vec<SymlinkConfig> {
         vec![
             SymlinkConfig {
                 source: config_dir.join("helix.config.toml"),

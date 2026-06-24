@@ -1,3 +1,4 @@
+use std::path::Path;
 use crate::detectors::app_detector::AppDetector;
 use crate::detectors::which::is_program_in_path;
 use crate::symlinks::SymlinkConfig;
@@ -13,11 +14,11 @@ impl AppDetector for YaziDetector {
         "Yazi"
     }
 
-    fn symlinks(&self, config_dir: &std::path::Path) -> Vec<SymlinkConfig> {
+    fn symlinks(&self, config_dir: &Path) -> Vec<SymlinkConfig> {
         vec![SymlinkConfig {
             source: config_dir.join("yazi.theme.toml"),
             destination: "~/.config/yazi/theme.toml",
-            installer_name: "Yazi",
+            installer_name: self.name(),
         }]
     }
 }

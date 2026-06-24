@@ -3,7 +3,6 @@ use crate::symlinks::SymlinkConfig;
 use std::env;
 use std::path::Path;
 
-/// Detects if oh-my-zsh is installed
 pub struct OhMyZshDetector;
 
 impl AppDetector for OhMyZshDetector {
