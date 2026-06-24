@@ -1,8 +1,8 @@
 use crate::detectors::app_detector::AppDetector;
+use crate::symlinks::SymlinkConfig;
 use std::env;
 use std::path::Path;
 
-/// Detects if oh-my-zsh is installed
 pub struct OhMyZshDetector;
 
 impl AppDetector for OhMyZshDetector {
@@ -17,5 +17,13 @@ impl AppDetector for OhMyZshDetector {
 
     fn name(&self) -> &'static str {
         "oh-my-zsh"
+    }
+
+    fn symlinks(&self, config_dir: &Path) -> Vec<SymlinkConfig> {
+        vec![SymlinkConfig {
+            source: config_dir.join("stefc.zsh-theme"),
+            destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
+            installer_name: "oh-my-zsh",
+        }]
     }
 }
