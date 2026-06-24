@@ -1,9 +1,9 @@
-use std::collections::HashSet;
-use crate::common::Log;
+use crate::common::{Log, get_hashset_delta};
 use crate::configurators::Configurator;
 use crate::detectors::VSCodeDetector;
 use crate::detectors::app_detector::AppDetector;
 use crate::symlinks::SetupResult;
+use std::collections::HashSet;
 
 /// Configurator to ensure some VS Code extensions are installed
 pub struct VscodeConfigurator;
@@ -33,7 +33,7 @@ impl Configurator for VscodeConfigurator {
         }
         let installed = installed_extensions().unwrap_or_default();
         let expected = extensions();
-        expected.difference(&installed).next().is_some()
+        !get_hashset_delta(&expected, &installed).is_empty()
     }
 
     fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
@@ -43,7 +43,7 @@ impl Configurator for VscodeConfigurator {
 
         let actual = installed_extensions().unwrap_or_default();
         let expected = extensions();
-        let missed = expected.difference(&actual);
+        let missed = get_hashset_delta(&expected, &actual);
 
         for ext in missed {
             logger.info(&format!("Installing VS Code extension: {}", ext));

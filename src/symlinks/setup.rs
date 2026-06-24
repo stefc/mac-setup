@@ -110,9 +110,7 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let src_escaped = config.source.display().to_string().replace(" ", "\\ ");
     let command = format!(
         "mkdir -p $(dirname {}) && ln -fsv {} {}",
-        dest_escaped,
-        src_escaped,
-        dest_escaped
+        dest_escaped, src_escaped, dest_escaped
     );
 
     match crate::common::run_command("sh", &["-c", &command]) {
