@@ -29,10 +29,10 @@ pub fn run_command(program: &str, args: &[&str]) -> Result<Option<String>, std::
     }
 }
 
-pub fn get_hashset_delta<'a>(
-    expected: &HashSet<&'a str>,
-    installed: &HashSet<&'a str>,
-) -> HashSet<&'a str> {
+pub fn get_hashset_delta<T: Eq + std::hash::Hash + Clone>(
+    expected: &HashSet<T>,
+    installed: &HashSet<T>,
+) -> HashSet<T> {
     expected.difference(installed).cloned().collect()
 }
 

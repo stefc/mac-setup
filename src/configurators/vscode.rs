@@ -8,17 +8,17 @@ use std::collections::HashSet;
 /// Configurator to ensure some VS Code extensions are installed
 pub struct VscodeConfigurator;
 
-fn extensions() -> HashSet<&'static str> {
+fn extensions() -> HashSet<String> {
     HashSet::from([
-        "github.copilot-chat",
-        "ms-dotnettools.csdevkit",
-        "ms-dotnettools.csharp",
-        "ms-dotnettools.vscode-dotnet-runtime",
-        "pflannery.vscode-versionlens",
-        "rust-lang.rust-analyzer",
-        "vadimcn.vscode-lldb",
-        "felip3fdl.warm-burnout",
-        "isudox.vscode-jetbrains-keybindings",
+        "github.copilot-chat".to_string(),
+        "ms-dotnettools.csdevkit".to_string(),
+        "ms-dotnettools.csharp".to_string(),
+        "ms-dotnettools.vscode-dotnet-runtime".to_string(),
+        "pflannery.vscode-versionlens".to_string(),
+        "rust-lang.rust-analyzer".to_string(),
+        "vadimcn.vscode-lldb".to_string(),
+        "felip3fdl.warm-burnout".to_string(),
+        "isudox.vscode-jetbrains-keybindings".to_string(),
     ])
 }
 
@@ -47,8 +47,8 @@ impl Configurator for VscodeConfigurator {
 
         for ext in missed {
             logger.info(&format!("Installing VS Code extension: {}", ext));
-            match crate::common::run_command("code", &["--install-extension", ext]) {
-                Ok(Some(_)) => logger.ok_with_highlight("Install extension ->", ext),
+            match crate::common::run_command("code", &["--install-extension", &ext]) {
+                Ok(Some(_)) => logger.ok_with_highlight("Install extension ->", &ext),
                 Ok(None) => {
                     return Err(crate::common::SetupError::CommandFailed {
                         command: format!("code --install-extension {}", ext),
@@ -67,14 +67,13 @@ impl Configurator for VscodeConfigurator {
     }
 }
 
-fn installed_extensions() -> Option<HashSet<&'static str>> {
+fn installed_extensions() -> Option<HashSet<String>> {
     match crate::common::run_command("code", &["--list-extensions"]) {
         Ok(Some(stdout)) => {
-            let stdout_leak: &'static str = Box::leak(stdout.into_boxed_str());
-            let set = stdout_leak
+            let set = stdout
                 .lines()
-                .map(|l| l.trim())
-                .collect::<HashSet<&'static str>>();
+                .map(|l| l.trim().to_string())
+                .collect::<HashSet<String>>();
             Some(set)
         }
         _ => None,
