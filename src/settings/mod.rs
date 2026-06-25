@@ -13,7 +13,7 @@ pub trait SystemSettings {
     fn platform(&self) -> Platform;
 
     /// Apply platform-specific system settings
-    fn apply(&self) -> Result<(), String>;
+    fn apply(&self) -> SetupResult<()>;
 
     /// Get a human-readable name for this settings configuration
     fn name(&self) -> &'static str;

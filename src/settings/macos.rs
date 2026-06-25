@@ -1,4 +1,4 @@
-use super::{Platform, SystemSettings};
+use super::{Platform, SetupResult, SystemSettings};
 
 /// macOS-specific system settings
 pub struct MacOSSettings;
@@ -8,7 +8,7 @@ impl SystemSettings for MacOSSettings {
         Platform::MacOS
     }
 
-    fn apply(&self) -> Result<(), String> {
+    fn apply(&self) -> SetupResult<()> {
         // Disable natural scrolling (swipe scrolling direction)
         self.set_global_setting_value("com.apple.swipescrolldirection", false)?;
         self.enable_trackpad_tap_to_click()?;
@@ -22,31 +22,28 @@ impl SystemSettings for MacOSSettings {
 }
 
 impl MacOSSettings {
-    fn activate_settings(&self) -> Result<(), String> {
+    fn activate_settings(&self) -> SetupResult<()> {
         crate::common::run_command(
             "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings",
             &["-u"],
-        )
-        .map(|_| ())
-        .map_err(|e| format!("Failed to activate settings: {}", e))
+        )?;
+        Ok(())
     }
 
-    fn enable_trackpad_tap_to_click(&self) -> Result<(), String> {
+    fn enable_trackpad_tap_to_click(&self) -> SetupResult<()> {
         self.set_local_setting_value("com.apple.AppleMultitouchTrackpad", "Clicking", true)?;
         Ok(())
     }
 
-    fn set_local_setting_value(&self, domain: &str, key: &str, value: bool) -> Result<(), String> {
+    fn set_local_setting_value(&self, domain: &str, key: &str, value: bool) -> SetupResult<()> {
         let bool_str = if value { "true" } else { "false" };
-        crate::common::run_command("defaults", &["write", domain, key, "-bool", bool_str])
-            .map(|_| ())
-            .map_err(|e| format!("Failed to set {} {}: {}", domain, key, e))
+        crate::common::run_command("defaults", &["write", domain, key, "-bool", bool_str])?;
+        Ok(())
     }
 
-    fn set_global_setting_value(&self, key: &str, value: bool) -> Result<(), String> {
+    fn set_global_setting_value(&self, key: &str, value: bool) -> SetupResult<()> {
         let bool_str = if value { "true" } else { "false" };
-        crate::common::run_command("defaults", &["write", "-g", key, "-bool", bool_str])
-            .map(|_| ())
-            .map_err(|e| format!("Failed to set mouse {}: {}", key, e))
+        crate::common::run_command("defaults", &["write", "-g", key, "-bool", bool_str])?;
+        Ok(())
     }
 }

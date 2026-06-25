@@ -1,4 +1,4 @@
-use super::{Platform, SystemSettings};
+use super::{Platform, SetupResult, SystemSettings};
 
 /// Windows-specific system settings
 pub struct WindowsSettings;
@@ -8,7 +8,7 @@ impl SystemSettings for WindowsSettings {
         Platform::Windows
     }
 
-    fn apply(&self) -> Result<(), String> {
+    fn apply(&self) -> SetupResult<()> {
         // Add Windows-specific settings here as needed
         Ok(())
     }

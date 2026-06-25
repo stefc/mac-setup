@@ -1,4 +1,4 @@
-use super::{Platform, SystemSettings};
+use super::{Platform, SetupResult, SystemSettings};
 
 /// Linux-specific system settings
 pub struct LinuxSettings;
@@ -8,7 +8,7 @@ impl SystemSettings for LinuxSettings {
         Platform::Linux
     }
 
-    fn apply(&self) -> Result<(), String> {
+    fn apply(&self) -> SetupResult<()> {
         // Add Linux-specific settings here as needed
         Ok(())
     }
