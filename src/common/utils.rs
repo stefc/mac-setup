@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+
 use std::env;
 use std::path::Path;
 use std::process::Command;
@@ -32,23 +32,7 @@ pub fn run_command(program: &str, args: &[&str]) -> super::SetupResult<String> {
     }
 }
 
-pub fn get_hashset_delta<'a>(
-    expected: &HashSet<&'a str>,
-    installed: &HashSet<&'a str>,
-) -> HashSet<&'a str> {
-    expected.difference(installed).cloned().collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_get_hashset_delta() {
-        let expected = HashSet::from(["a", "b", "c"]);
-        let installed = HashSet::from(["b", "d"]);
-        let delta = get_hashset_delta(&expected, &installed);
-        let expected_delta = HashSet::from(["a", "c"]);
-        assert_eq!(delta, expected_delta);
-    }
 }
