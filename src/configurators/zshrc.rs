@@ -122,68 +122,34 @@ impl ZshrcConfigurator {
 
     /// Extend the plugins list with new plugins (avoiding duplicates)
     fn extend_plugins(&self, lines: &mut Vec<String>, plugins_to_add: &[&str]) {
-        // Find the plugins line
-        if let Some(pos) = lines.iter().position(|line| {
-            let trimmed = line.trim();
-            !trimmed.starts_with('#') && trimmed.starts_with("plugins=")
-        }) {
-            // Parse existing plugins
-            let line = &lines[pos];
-            let mut existing_plugins = Vec::new();
+        let pos = lines.iter().position(|l| l.trim().starts_with("plugins=") && !l.trim().starts_with('#'));
+        let mut plugins: Vec<String> = pos.map(|p| &lines[p])
+            .and_then(|line| line.split_once('('))
+            .and_then(|(_, rest)| rest.split_once(')'))
+            .map(|(pl_str, _)| pl_str.split_whitespace().map(String::from).collect())
+            .unwrap_or_default();
 
-            // Extract plugins from plugins=(plugin1 plugin2 ...)
-            if let Some(start) = line.find('(') {
-                if let Some(end) = line.find(')') {
-                    let plugins_str = &line[start + 1..end];
-                    existing_plugins = plugins_str
-                        .split_whitespace()
-                        .map(|s| s.to_string())
-                        .collect();
-                }
+        for &p in plugins_to_add {
+            if !plugins.iter().any(|existing| existing == p) {
+                plugins.push(p.to_string());
             }
+        }
 
-            // Add new plugins if not already present
-            for plugin in plugins_to_add {
-                if !existing_plugins.iter().any(|p| p == plugin) {
-                    existing_plugins.push(plugin.to_string());
-                }
-            }
-
-            // Update the line
-            lines[pos] = format!("plugins=({})", existing_plugins.join(" "));
+        let new_line = format!("plugins=({})", plugins.join(" "));
+        if let Some(p) = pos {
+            lines[p] = new_line;
         } else {
-            // If plugins line doesn't exist, create it with the new plugins
-            let plugins_line = format!("plugins=({})", plugins_to_add.join(" "));
-            let insert_pos = lines
-                .iter()
-                .position(|line| {
-                    let trimmed = line.trim();
-                    !trimmed.is_empty() && !trimmed.starts_with('#')
-                })
-                .unwrap_or(0);
-
-            lines.insert(insert_pos, plugins_line);
+            let insert_pos = lines.iter().position(|l| !l.trim().is_empty() && !l.trim().starts_with('#')).unwrap_or(0);
+            lines.insert(insert_pos, new_line);
         }
     }
 
     /// Update an existing line or add a new one
     fn update_or_add_line(&self, lines: &mut Vec<String>, prefix: &str, new_line: &str) {
-        // Find the line that starts with the prefix (ignoring leading whitespace and comments)
-        if let Some(pos) = lines.iter().position(|line| {
-            let trimmed = line.trim();
-            !trimmed.starts_with('#') && trimmed.starts_with(prefix)
-        }) {
+        if let Some(pos) = lines.iter().position(|l| l.trim().starts_with(prefix) && !l.trim().starts_with('#')) {
             lines[pos] = new_line.to_string();
         } else {
-            // If not found, add it (we'll add it before the first non-comment, non-empty line if possible)
-            let insert_pos = lines
-                .iter()
-                .position(|line| {
-                    let trimmed = line.trim();
-                    !trimmed.is_empty() && !trimmed.starts_with('#')
-                })
-                .unwrap_or(0);
-
+            let insert_pos = lines.iter().position(|l| !l.trim().is_empty() && !l.trim().starts_with('#')).unwrap_or(0);
             lines.insert(insert_pos, new_line.to_string());
         }
     }
@@ -206,5 +172,70 @@ impl Configurator for ZshrcConfigurator {
         Self::get_zshrc_path()
             .map(|path| vec![replace_home_with_tilde(&path)])
             .unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn new_zsh_configurator() -> ZshrcConfigurator {
+        ZshrcConfigurator::default()
+    }
+
+    #[test]
+    fn test_extend_plugins_add_to_existing() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=(git zsh-syntax-highlighting)".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(git zsh-syntax-highlighting z gh)"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_add_with_duplicates() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=(git z)".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(git z gh)"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_no_existing_plugins_line() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["some line".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(z gh)", "some line"]);
+    }
+
+    #[test]
+    fn test_extend_plugins_empty_initial_plugins() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["plugins=()".to_string()];
+        configurator.extend_plugins(&mut lines, &["z", "gh"]);
+        assert_eq!(lines, vec!["plugins=(z gh)"]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_updates_existing() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["ZSH_THEME=\"old_theme\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["ZSH_THEME=\"new_theme\""]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_adds_new() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["some_other_line=\"value\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["ZSH_THEME=\"new_theme\"", "some_other_line=\"value\""]);
+    }
+
+    #[test]
+    fn test_update_or_add_line_ignores_commented_line() {
+        let configurator = new_zsh_configurator();
+        let mut lines = vec!["# ZSH_THEME=\"old_theme\"".to_string(), "other_line=\"value\"".to_string()];
+        configurator.update_or_add_line(&mut lines, "ZSH_THEME", "ZSH_THEME=\"new_theme\"");
+        assert_eq!(lines, vec!["# ZSH_THEME=\"old_theme\"", "ZSH_THEME=\"new_theme\"", "other_line=\"value\""]);
     }
 }

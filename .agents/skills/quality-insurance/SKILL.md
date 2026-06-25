@@ -8,17 +8,19 @@ Your task is to review the provided codebase and identify opportunities to impro
 
 ### General Principles
 
-1. **Dead Logic & Redundancy**:
+1. **Dead Logic & Redundancy & DRY (Don't Repeat Yourself)**:
     - Identify and remove code blocks that have no effect on the program's outcome (e.g., identical return values in all branches of a conditional statement).
     - Flag unreachable code, unused variables, uncalled private methods, and unnecessary initializations.
     - Eliminate redundant type checks or conditions that are already guaranteed to be true/false by the compiler or prior logic.
     - Identify repetitive boilerplate, overly verbose conditional logic, and unutilized variables.
+    - Spot and eliminate duplicated hardcoded strings, magic values, or paths. Require the reuse of existing trait methods (like `self.name()`) instead of duplicating their string literals in struct initializations or logic.
 
 2. **KISS Principle & Idiomatic Rust**:
     - Simplify overly verbose boolean logic. For example, replace manual `if / else` true/false returns with direct boolean evaluations.
     - Point out over-engineered abstractions or unnecessary custom implementations where standard library functions or simple language constructs would suffice.
     - Strip away cognitive noise and unnecessary boilerplate that obfuscates the core business logic.
     - Suggest idiomatic Rust simplifications (e.g., utilizing `Option`/`Result` combinators like `map`, `and_then`, `unwrap_or_else` instead of verbose `match` or `if let` blocks).
+    - Enforce importing types via `use` statements at the top of the file (e.g., `use crate::module::Type;`) instead of cluttering function signatures and variable declarations with fully-qualified absolute paths.
 
 3. **Reduction of Cyclomatic Complexity**:
     - Identify deeply nested control structures (e.g., nested `if`, `for`, `while` blocks) and suggest ways to flatten them.
