@@ -53,32 +53,21 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
 fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let dest_str = config.destination;
     // Expand tilde to actual home directory for file system operations
-    let dest_expanded = if let Some(stripped) = dest_str.strip_prefix("~/") {
-        if let Some(home_dir) = std::env::var_os("HOME") {
-            std::path::Path::new(&home_dir).join(stripped)
-        } else {
-            std::path::PathBuf::from(dest_str)
-        }
-    } else {
-        std::path::PathBuf::from(dest_str)
-    };
+    let dest_expanded = dest_str
+        .strip_prefix("~/")
+        .and_then(|stripped| {
+            std::env::var_os("HOME").map(|home| std::path::Path::new(&home).join(stripped))
+        })
+        .unwrap_or_else(|| std::path::PathBuf::from(dest_str));
 
     if let Some(parent) = dest_expanded.parent() {
-        if !parent.exists() {
-            if let Err(e) = std::fs::create_dir_all(parent) {
-                return Err(crate::common::SetupError::Io(e));
-            }
-        }
+        std::fs::create_dir_all(parent)?;
     }
 
     if dest_expanded.exists() || dest_expanded.is_symlink() {
-        if let Err(e) = std::fs::remove_file(&dest_expanded) {
-            return Err(crate::common::SetupError::Io(e));
-        }
+        std::fs::remove_file(&dest_expanded)?;
     }
 
-    match std::os::unix::fs::symlink(&config.source, &dest_expanded) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(crate::common::SetupError::Io(e)),
-    }
+    std::os::unix::fs::symlink(&config.source, &dest_expanded)?;
+    Ok(())
 }
