@@ -14,7 +14,7 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
         .expect("Failed to get executable directory");
     let config_dir = exe_dir.join("config");
 
-    let detectors: Vec<&dyn AppDetector> = vec![
+    let detectors: [&dyn AppDetector; 5] = [
         &WezTermDetector,
         &OhMyZshDetector,
         &VSCodeDetector,

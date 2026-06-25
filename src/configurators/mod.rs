@@ -29,10 +29,11 @@ pub trait Configurator {
 
 pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Configuration");
-    let configurators: Vec<Box<dyn Configurator>> = vec![
-        Box::new(YaziConfigurator),
-        Box::new(VscodeConfigurator),
-        Box::new(ZshrcConfigurator::default()),
+    let zshrc = ZshrcConfigurator::default();
+    let configurators: [&dyn Configurator; 3] = [
+        &YaziConfigurator,
+        &VscodeConfigurator,
+        &zshrc,
     ];
     let mut affected = 0usize;
     for configurator in configurators {
