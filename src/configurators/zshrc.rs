@@ -61,7 +61,7 @@ impl ZshrcConfigurator {
 
         // Modify the content
         let new_content =
-            self.modify_zshrc_content(&content, &self.theme, self.plugins, self.env_vars);
+            self.modify_zshrc_content(&content, self.theme, self.plugins, self.env_vars);
 
         // Write back to disk
         fs::write(&zshrc_path, new_content)?;
@@ -106,7 +106,7 @@ impl ZshrcConfigurator {
                     || trimmed.starts_with(&format!("{}=", key))
             }) {
                 lines.push(String::new()); // Add blank line for readability
-                lines.push(format!("# Added by mac-setup"));
+                lines.push("# Added by mac-setup".to_string());
                 lines.push(export_line);
             }
         }
