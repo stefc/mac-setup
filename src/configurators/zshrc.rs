@@ -50,7 +50,7 @@ impl ZshrcConfigurator {
     fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
         let zshrc_path = Self::get_zshrc_path()?;
 
-        println!("Configuring .zshrc at {:?}...", zshrc_path);
+        logger.info(&format!("Configuring .zshrc at {:?}...", zshrc_path));
 
         // Read the current content
         let content = fs::read_to_string(&zshrc_path).map_err(|e| {
@@ -77,11 +77,11 @@ impl ZshrcConfigurator {
             &replace_home_with_tilde(&zshrc_path),
         );
 
-        println!(".zshrc configured successfully");
-        println!("  - Theme set to: {}", self.theme);
-        println!("  - Plugins: {}", self.plugins.join(", "));
+        logger.info(".zshrc configured successfully");
+        logger.info(&format!("  - Theme set to: {}", self.theme));
+        logger.info(&format!("  - Plugins: {}", self.plugins.join(", ")));
         for (key, value) in self.env_vars {
-            println!("  - Export {}={}", key, value);
+            logger.info(&format!("  - Export {}={}", key, value));
         }
 
         Ok(())
