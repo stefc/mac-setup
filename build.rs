@@ -52,37 +52,36 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         "helix.config.toml",
     ];
 
-    for &asset_name in ASSETS {
-        let source_path = Path::new("config").join(asset_name);
-        let dest_path = config_dest.join(asset_name);
+    const HELIX_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
+    const WEZTERM_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
+
+    copy_assets(&config_dest, None, ASSETS)?;
+    copy_assets(&config_dest, Some("helix-theme"), HELIX_ASSETS)?;
+    copy_assets(&config_dest, Some("wezterm-theme"), WEZTERM_ASSETS)?;
+
+    Ok(())
+}
+
+/// Copies a list of assets from `config/<subfolder>/` to `config_dest/<subfolder>/`,
+/// emitting `cargo:rerun-if-changed` directives for each asset.
+fn copy_assets(config_dest: &Path, subfolder: Option<&str>, assets: &[&str]) -> io::Result<()> {
+    for &asset_name in assets {
+        let (source_path, dest_path) = match subfolder {
+            Some(sub) => (
+                Path::new("config").join(sub).join(asset_name),
+                config_dest.join(sub).join(asset_name),
+            ),
+            None => (
+                Path::new("config").join(asset_name),
+                config_dest.join(asset_name),
+            ),
+        };
 
         // Instruct Cargo to re-run this script if the source asset changes.
-        println!("cargo:rerun-if-changed=config/{}", asset_name);
+        println!("cargo:rerun-if-changed={}", source_path.display());
 
-        // Perform the copy and provide feedback.
-        let _copied = copy_if_newer(&source_path, &dest_path)
-            .expect(&format!("Failed to check or copy asset {}", asset_name));
+        copy_if_newer(&source_path, &dest_path)?;
     }
-
-    const HELIX_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
-    for &asset_name in HELIX_ASSETS {
-        let source_path = Path::new("config").join("helix-theme").join(asset_name);
-        let dest_path = config_dest.join("helix-theme").join(asset_name);
-
-        // Perform the copy and provide feedback.
-        let _copied = copy_if_newer(&source_path, &dest_path)
-            .expect(&format!("Failed to check or copy asset {}", asset_name));
-    }
-    const WEZTERM_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];
-    for &asset_name in WEZTERM_ASSETS {
-        let source_path = Path::new("config").join("wezterm-theme").join(asset_name);
-        let dest_path = config_dest.join("wezterm-theme").join(asset_name);
-
-        // Perform the copy and provide feedback.
-        let _copied = copy_if_newer(&source_path, &dest_path)
-            .expect(&format!("Failed to check or copy asset {}", asset_name));
-    }
-
     Ok(())
 }
 
@@ -90,7 +89,7 @@ fn get_modified_time(path: &Path) -> io::Result<SystemTime> {
     Ok(fs::metadata(path)?.modified()?)
 }
 
-fn copy_if_newer(source: &PathBuf, dest: &PathBuf) -> io::Result<bool> {
+fn copy_if_newer(source: &Path, dest: &Path) -> io::Result<bool> {
     if !source.exists() {
         return Ok(false);
     }
@@ -98,11 +97,8 @@ fn copy_if_newer(source: &PathBuf, dest: &PathBuf) -> io::Result<bool> {
     let should_copy = if !dest.exists() {
         true
     } else {
-        let src_time =
-            get_modified_time(source).expect("Failed to get modification time for source");
-
-        let dest_time =
-            get_modified_time(dest).expect("Failed to get modification time for destination");
+        let src_time = get_modified_time(source)?;
+        let dest_time = get_modified_time(dest)?;
         src_time > dest_time
     };
 
