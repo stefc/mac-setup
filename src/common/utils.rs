@@ -1,8 +1,4 @@
-use std::{
-    env,
-    path::Path,
-    process::Command
-};
+use std::{env, path::Path, process::Command};
 
 pub fn replace_home_with_tilde(path: &Path) -> String {
     if let Some(home_dir) = env::var_os("HOME") {
