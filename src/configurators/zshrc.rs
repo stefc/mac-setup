@@ -53,24 +53,14 @@ impl ZshrcConfigurator {
         logger.info(&format!("Configuring .zshrc at {:?}...", zshrc_path));
 
         // Read the current content
-        let content = fs::read_to_string(&zshrc_path).map_err(|e| {
-            crate::common::SetupError::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Failed to read .zshrc: {}", e),
-            ))
-        })?;
+        let content = fs::read_to_string(&zshrc_path)?;
 
         // Modify the content
         let new_content =
             self.modify_zshrc_content(&content, &self.theme, self.plugins, self.env_vars);
 
         // Write back to disk
-        fs::write(&zshrc_path, new_content).map_err(|e| {
-            crate::common::SetupError::Io(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                format!("Failed to write .zshrc: {}", e),
-            ))
-        })?;
+        fs::write(&zshrc_path, new_content)?;
 
         logger.ok_with_highlight(
             "Configured .zshrc at ->",
