@@ -1,9 +1,13 @@
-use crate::common::{Log, replace_home_with_tilde};
-use crate::configurators::Configurator;
-use crate::symlinks::SetupResult;
-use std::env;
-use std::fs;
-use std::path::PathBuf;
+use crate::{
+    common::{Log, replace_home_with_tilde},
+    configurators::Configurator,
+    symlinks::SetupResult
+};
+use std::{
+    env,
+    fs,
+    path::PathBuf
+};
 
 /// Configurator for .zshrc file
 pub struct ZshrcConfigurator {
