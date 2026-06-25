@@ -1,4 +1,3 @@
-
 use std::env;
 use std::path::Path;
 use std::process::Command;
@@ -30,9 +29,4 @@ pub fn run_command(program: &str, args: &[&str]) -> super::SetupResult<String> {
             exit_code: output.status.code(),
         })
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
 }
