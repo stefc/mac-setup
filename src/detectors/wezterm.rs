@@ -1,7 +1,7 @@
-use std::path;
 use crate::detectors::app_detector::AppDetector;
 use crate::detectors::mac_app::is_mac_app_in_path;
 use crate::symlinks::SymlinkConfig;
+use std::path;
 
 pub struct WezTermDetector;
 

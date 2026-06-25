@@ -1,7 +1,7 @@
-use std::path::Path;
 use crate::detectors::app_detector::AppDetector;
 use crate::detectors::which::is_program_in_path;
 use crate::symlinks::SymlinkConfig;
+use std::path::Path;
 
 pub struct YaziDetector;
 

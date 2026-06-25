@@ -1,7 +1,7 @@
 use crate::common::Log;
 use crate::configurators::Configurator;
 use crate::detectors::{YaziDetector, app_detector::AppDetector};
-use crate::symlinks::{SetupError, SetupResult};
+use crate::symlinks::SetupResult;
 
 /// Configurator for Yazi file manager
 pub struct YaziConfigurator;

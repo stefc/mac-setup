@@ -1,5 +1,5 @@
-use std::path::Path;
 use crate::symlinks::SymlinkConfig;
+use std::path::Path;
 
 /// Trait for detecting if an application is installed
 pub trait AppDetector {

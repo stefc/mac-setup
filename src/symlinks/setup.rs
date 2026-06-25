@@ -4,13 +4,14 @@ use crate::detectors::{
 };
 use crate::symlinks::{SetupResult, SymlinkConfig};
 use std::env;
-use std::path::Path;
 
 pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Create Symlinks");
 
     let exe_path = env::current_exe().expect("Failed to get executable path");
-    let exe_dir = exe_path.parent().expect("Failed to get executable directory");
+    let exe_dir = exe_path
+        .parent()
+        .expect("Failed to get executable directory");
     let config_dir = exe_dir.join("config");
 
     let detectors: Vec<&dyn AppDetector> = vec![
