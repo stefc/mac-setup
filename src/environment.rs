@@ -27,6 +27,6 @@ fn executable_directory() -> String {
     let exe_path = env::current_exe().expect("Failed to get executable path");
     exe_path
         .parent()
-        .map(|p| replace_home_with_tilde(p))
+        .map(replace_home_with_tilde)
         .unwrap_or_else(|| "<unknown>".into())
 }
