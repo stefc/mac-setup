@@ -1,9 +1,15 @@
-use crate::common::Log;
-use crate::detectors::{
-    AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
+use crate::{
+    common::Log,
+    detectors::{
+        AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
+    },
+    symlinks::{SetupResult, SymlinkConfig},
 };
-use crate::symlinks::{SetupResult, SymlinkConfig};
-use std::{env, os, path};
+use std::{
+    env, fs,
+    os::unix,
+    path::{Path, PathBuf},
+};
 
 pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Create Symlinks");
@@ -52,33 +58,19 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
 
 fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let dest_str = config.destination;
-    // Expand tilde to actual home directory for file system operations
-    let dest_expanded = if let Some(stripped) = dest_str.strip_prefix("~/") {
-        if let Some(home_dir) = env::var_os("HOME") {
-            path::Path::new(&home_dir).join(stripped)
-        } else {
-            path::PathBuf::from(dest_str)
-        }
-    } else {
-        path::PathBuf::from(dest_str)
-    };
+    let dest_expanded = dest_str
+        .strip_prefix("~/")
+        .and_then(|stripped| env::var_os("HOME").map(|home| Path::new(&home).join(stripped)))
+        .unwrap_or_else(|| PathBuf::from(dest_str));
 
     if let Some(parent) = dest_expanded.parent() {
-        if !parent.exists() {
-            if let Err(e) = std::fs::create_dir_all(parent) {
-                return Err(crate::common::SetupError::Io(e));
-            }
-        }
+        fs::create_dir_all(parent)?;
     }
 
     if dest_expanded.exists() || dest_expanded.is_symlink() {
-        if let Err(e) = std::fs::remove_file(&dest_expanded) {
-            return Err(crate::common::SetupError::Io(e));
-        }
+        fs::remove_file(&dest_expanded)?;
     }
 
-    match os::unix::fs::symlink(&config.source, &dest_expanded) {
-        Ok(_) => Ok(()),
-        Err(e) => Err(crate::common::SetupError::Io(e)),
-    }
+    unix::fs::symlink(&config.source, &dest_expanded)?;
+    Ok(())
 }
