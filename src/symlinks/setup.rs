@@ -3,7 +3,7 @@ use crate::detectors::{
     AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
 };
 use crate::symlinks::{SetupResult, SymlinkConfig};
-use std::env;
+use std::{env, os, path};
 
 pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Create Symlinks");
@@ -54,13 +54,13 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let dest_str = config.destination;
     // Expand tilde to actual home directory for file system operations
     let dest_expanded = if let Some(stripped) = dest_str.strip_prefix("~/") {
-        if let Some(home_dir) = std::env::var_os("HOME") {
-            std::path::Path::new(&home_dir).join(stripped)
+        if let Some(home_dir) = env::var_os("HOME") {
+            path::Path::new(&home_dir).join(stripped)
         } else {
-            std::path::PathBuf::from(dest_str)
+            path::PathBuf::from(dest_str)
         }
     } else {
-        std::path::PathBuf::from(dest_str)
+        path::PathBuf::from(dest_str)
     };
 
     if let Some(parent) = dest_expanded.parent() {
@@ -77,7 +77,7 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
         }
     }
 
-    match std::os::unix::fs::symlink(&config.source, &dest_expanded) {
+    match os::unix::fs::symlink(&config.source, &dest_expanded) {
         Ok(_) => Ok(()),
         Err(e) => Err(crate::common::SetupError::Io(e)),
     }
