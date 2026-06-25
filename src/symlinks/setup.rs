@@ -1,9 +1,15 @@
-use crate::common::Log;
-use crate::detectors::{
-    AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
+use crate::{
+    common::Log,
+    detectors::{
+        AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
+    },
+    symlinks::{SetupResult, SymlinkConfig},
 };
-use crate::symlinks::{SetupResult, SymlinkConfig};
-use std::env;
+use std::{
+    env, fs,
+    os::unix,
+    path::{Path, PathBuf},
+};
 
 pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Create Symlinks");
@@ -52,22 +58,19 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
 
 fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
     let dest_str = config.destination;
-    // Expand tilde to actual home directory for file system operations
     let dest_expanded = dest_str
         .strip_prefix("~/")
-        .and_then(|stripped| {
-            std::env::var_os("HOME").map(|home| std::path::Path::new(&home).join(stripped))
-        })
-        .unwrap_or_else(|| std::path::PathBuf::from(dest_str));
+        .and_then(|stripped| env::var_os("HOME").map(|home| Path::new(&home).join(stripped)))
+        .unwrap_or_else(|| PathBuf::from(dest_str));
 
     if let Some(parent) = dest_expanded.parent() {
-        std::fs::create_dir_all(parent)?;
+        fs::create_dir_all(parent)?;
     }
 
     if dest_expanded.exists() || dest_expanded.is_symlink() {
-        std::fs::remove_file(&dest_expanded)?;
+        fs::remove_file(&dest_expanded)?;
     }
 
-    std::os::unix::fs::symlink(&config.source, &dest_expanded)?;
+    unix::fs::symlink(&config.source, &dest_expanded)?;
     Ok(())
 }
