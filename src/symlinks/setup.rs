@@ -7,7 +7,6 @@ use crate::{
 };
 use std::{
     env, fs,
-    os::unix,
     path::{Path, PathBuf},
 };
 
@@ -71,6 +70,20 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
         fs::remove_file(&dest_expanded)?;
     }
 
-    unix::fs::symlink(&config.source, &dest_expanded)?;
+    create_symlink(&config.source, &dest_expanded)?;
     Ok(())
+}
+
+#[cfg(unix)]
+fn create_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
+    std::os::unix::fs::symlink(source, dest)
+}
+
+#[cfg(windows)]
+fn create_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
+    if source.is_dir() {
+        std::os::windows::fs::symlink_dir(source, dest)
+    } else {
+        std::os::windows::fs::symlink_file(source, dest)
+    }
 }
