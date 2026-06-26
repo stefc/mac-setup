@@ -29,16 +29,19 @@ pub trait Configurator {
 
 pub fn run_configurators(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Configuration");
+    let yazi = YaziConfigurator::default();
+    let vscode = VscodeConfigurator::default();
     let zshrc = ZshrcConfigurator::default();
-    let configurators: [&dyn Configurator; 3] = [&YaziConfigurator, &VscodeConfigurator, &zshrc];
+    let configurators: [&dyn Configurator; 3] = [&yazi, &vscode, &zshrc];
     let mut affected = 0usize;
     for configurator in configurators {
+        let needs_run = configurator.should_run();
         configurator.run(logger)?;
-        let files = configurator.affected_files();
-        for file in files {
-            logger.ok_with_highlight("Configured successfully ->", &file);
-        }
-        if configurator.should_run() {
+        if needs_run {
+            let files = configurator.affected_files();
+            for file in files {
+                logger.ok_with_highlight("Configured successfully ->", &file);
+            }
             affected += 1;
         }
     }
