@@ -2,9 +2,13 @@ use crate::common::Log;
 use crate::configurators::Configurator;
 use crate::detectors::{YaziDetector, app_detector::AppDetector};
 use crate::symlinks::SetupResult;
+use std::cell::OnceCell;
 
 /// Configurator for Yazi file manager
-pub struct YaziConfigurator;
+#[derive(Default)]
+pub struct YaziConfigurator {
+    installed_packages_cache: OnceCell<Option<String>>,
+}
 
 impl YaziConfigurator {
     fn is_installed(&self) -> bool {
@@ -13,9 +17,12 @@ impl YaziConfigurator {
 
     /// Check if a Yazi package is already installed
     fn is_package_installed(&self, package_name: &str) -> bool {
-        match crate::common::run_command("ya", &["pkg", "list"]) {
-            Ok(stdout) => stdout.contains(package_name),
-            _ => false,
+        let cache = self.installed_packages_cache.get_or_init(|| {
+            crate::common::run_command("ya", &["pkg", "list"]).ok()
+        });
+        match cache {
+            Some(stdout) => stdout.contains(package_name),
+            None => false,
         }
     }
 

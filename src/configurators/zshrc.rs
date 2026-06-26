@@ -163,7 +163,16 @@ impl Configurator for ZshrcConfigurator {
     }
 
     fn should_run(&self) -> bool {
-        self.exists()
+        if !self.exists() {
+            return false;
+        }
+        if let Ok(zshrc_path) = Self::get_zshrc_path() {
+            if let Ok(content) = fs::read_to_string(&zshrc_path) {
+                let new_content = self.modify_zshrc_content(&content, self.theme, self.plugins, self.env_vars);
+                return content != new_content;
+            }
+        }
+        false
     }
 
     fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
