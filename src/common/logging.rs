@@ -164,6 +164,6 @@ fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>)
             format!("Summary — {}", summary_parts.join(" · "))
         }
     };
-    let footer = Paragraph::new(footer_text).block(Block::default().borders(Borders::ALL));
+    let footer = Paragraph::new(footer_text);
     f.render_widget(footer, chunks[2]);
 }
