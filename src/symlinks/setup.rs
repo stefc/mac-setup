@@ -5,10 +5,7 @@ use crate::{
     },
     symlinks::{SetupResult, SymlinkConfig},
 };
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-};
+use std::{env, fs, io, path::{Path, PathBuf}};
 
 pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
     logger.info("▶ Create Symlinks");
@@ -75,12 +72,12 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
 }
 
 #[cfg(unix)]
-fn create_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
+fn create_symlink(source: &Path, dest: &Path) -> io::Result<()> {
     std::os::unix::fs::symlink(source, dest)
 }
 
 #[cfg(windows)]
-fn create_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
+fn create_symlink(source: &Path, dest: &Path) -> io::Result<()> {
     if source.is_dir() {
         std::os::windows::fs::symlink_dir(source, dest)
     } else {
