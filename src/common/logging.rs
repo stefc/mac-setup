@@ -100,7 +100,7 @@ pub fn render_ui(snapshot: &LogSnapshot, err: Option<String>) -> io::Result<()> 
 }
 
 fn draw_frame(f: &mut ratatui::Frame, snapshot: &LogSnapshot, err: Option<&str>) {
-    let size = f.size();
+    let size = f.area();
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
