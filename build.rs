@@ -24,9 +24,13 @@ fn find_target_dir() -> io::Result<PathBuf> {
         io::Error::new(io::ErrorKind::Other, "OUT_DIR environment variable not set")
     })?;
 
+    // The depth of OUT_DIR varies between Cargo versions
+    // (`build/<pkg>-<hash>/out` vs `build/<pkg>/<hash>/out`), so locate the
+    // `build` ancestor and use its parent (the profile directory, next to the binary).
     Path::new(&out_dir)
         .ancestors()
-        .nth(3) // Traverse up three levels: out -> build -> profile -> target
+        .find(|p| p.file_name().is_some_and(|n| n == "build"))
+        .and_then(Path::parent)
         .map(PathBuf::from)
         .ok_or_else(|| {
             io::Error::new(
