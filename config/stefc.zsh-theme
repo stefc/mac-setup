@@ -36,11 +36,11 @@ CURRENT_BG='NONE'
 
 case ${SOLARIZED_THEME:-dark} in
     light)
-      CURRENT_FG=${CURRENT_FG:-'white'}
-      CURRENT_DEFAULT_FG=${CURRENT_DEFAULT_FG:-'white'}
+      CURRENT_FG=${CURRENT_FG:-'#bfbdb6'}
+      CURRENT_DEFAULT_FG=${CURRENT_DEFAULT_FG:-'#bfbdb6'}
       ;;
     *)
-      CURRENT_FG=${CURRENT_FG:-'black'}
+      CURRENT_FG=${CURRENT_FG:-'#23211b'}
       CURRENT_DEFAULT_FG=${CURRENT_DEFAULT_FG:-'default'}
       ;;
 esac
@@ -50,29 +50,29 @@ esac
 # Override these settings in your ~/.zshrc
 
 # Current working directory
-: ${AGNOSTER_DIR_FG:='#3a3630'}
-: ${AGNOSTER_DIR_BG:='#90aec0'}
+: ${AGNOSTER_DIR_FG:=${CURRENT_FG}}
+: ${AGNOSTER_DIR_BG:=#4fbfff}
 
 # user@host
 : ${AGNOSTER_CONTEXT_FG:=${CURRENT_DEFAULT_FG}}
-: ${AGNOSTER_CONTEXT_BG:=black}
+: ${AGNOSTER_CONTEXT_BG:=#23211b}
 
 # Git related
-: ${AGNOSTER_GIT_CLEAN_FG:='#3a3630'}
-: ${AGNOSTER_GIT_CLEAN_BG:='#b4bc78'}
-: ${AGNOSTER_GIT_DIRTY_FG:='#3a3630'}
-: ${AGNOSTER_GIT_DIRTY_BG:='#ffb454'}
+: ${AGNOSTER_GIT_CLEAN_FG:=${CURRENT_FG}}
+: ${AGNOSTER_GIT_CLEAN_BG:=#70bf56}
+: ${AGNOSTER_GIT_DIRTY_FG:=#23211b}
+: ${AGNOSTER_GIT_DIRTY_BG:=#fdb04c}
 
 # VirtualEnv colors
-: ${AGNOSTER_VENV_FG:=black}
-: ${AGNOSTER_VENV_BG:=blue}
+: ${AGNOSTER_VENV_FG:=#23211b}
+: ${AGNOSTER_VENV_BG:=#4fbfff}
 
 # Status symbols
-: ${AGNOSTER_STATUS_RETVAL_FG:='#b03434'}
-: ${AGNOSTER_STATUS_ROOT_FG:=yellow}
 : ${AGNOSTER_STATUS_JOB_FG:=cyan}
 : ${AGNOSTER_STATUS_FG:=${CURRENT_DEFAULT_FG}}
-: ${AGNOSTER_STATUS_BG:='#3a3630'}
+: ${AGNOSTER_STATUS_BG:=#23211b}
+: ${AGNOSTER_STATUS_ROOT_FG:=#fdb04c}
+: ${AGNOSTER_STATUS_RETVAL_FG:=red}
 
 ## Non-Color settings - set to 'true' to enable
 # Show the actual numeric return value rather than a cross symbol.
