@@ -10,7 +10,19 @@ pub struct ZshrcConfigurator {
     theme: &'static str,
     plugins: &'static [&'static str],
     env_vars: &'static [(&'static str, &'static str)],
+    functions: &'static [(&'static str, &'static str)],
 }
+
+const KC_FUNCTION: &str = r#"# Generic getter
+kc() {
+  security find-generic-password -a "$USER" -s "$1" -w 2>/dev/null \
+    || { echo "kc: no keychain item '$1'" >&2; return 1; }
+}"#;
+
+const KC_SET_FUNCTION: &str = r#"# Generic setter (prompts for the secret)
+kc-set() {
+  security add-generic-password -U -a "$USER" -s "$1" -w
+}"#;
 
 impl Default for ZshrcConfigurator {
     fn default() -> Self {
@@ -18,6 +30,7 @@ impl Default for ZshrcConfigurator {
             theme: "stefc",
             plugins: &["z", "gh"],
             env_vars: &[("HOMEBREW_NO_AUTO_UPDATE", "1"), ("EDITOR", "hx")],
+            functions: &[("kc", KC_FUNCTION), ("kc-set", KC_SET_FUNCTION)],
         }
     }
 }
@@ -56,8 +69,13 @@ impl ZshrcConfigurator {
         let content = fs::read_to_string(&zshrc_path)?;
 
         // Modify the content
-        let new_content =
-            self.modify_zshrc_content(&content, self.theme, self.plugins, self.env_vars);
+        let new_content = self.modify_zshrc_content(
+            &content,
+            self.theme,
+            self.plugins,
+            self.env_vars,
+            self.functions,
+        );
 
         // Write back to disk
         fs::write(&zshrc_path, new_content)?;
@@ -73,17 +91,21 @@ impl ZshrcConfigurator {
         for (key, value) in self.env_vars {
             logger.info(&format!("  - Export {}={}", key, value));
         }
+        for (name, _) in self.functions {
+            logger.info(&format!("  - Function {}()", name));
+        }
 
         Ok(())
     }
 
-    /// Modify the .zshrc content by updating theme, plugins, and adding environment variables
+    /// Modify the .zshrc content by updating theme, plugins, and adding environment variables and functions
     fn modify_zshrc_content(
         &self,
         content: &str,
         theme: &str,
         plugins_to_add: &[&str],
         env_vars: &[(&str, &str)],
+        functions: &[(&str, &str)],
     ) -> String {
         let mut lines: Vec<String> = content.lines().map(|s| s.to_string()).collect();
 
@@ -104,6 +126,20 @@ impl ZshrcConfigurator {
                 lines.push(String::new()); // Add blank line for readability
                 lines.push("# Added by mac-setup".to_string());
                 lines.push(export_line);
+            }
+        }
+
+        // Add shell functions if not present
+        for (name, body) in functions {
+            let func_prefix = format!("{}()", name);
+            if !lines.iter().any(|line| {
+                let trimmed = line.trim();
+                !trimmed.starts_with('#') && trimmed.starts_with(&func_prefix)
+            }) {
+                lines.push(String::new());
+                for func_line in body.lines() {
+                    lines.push(func_line.to_string());
+                }
             }
         }
 
@@ -252,5 +288,29 @@ mod tests {
                 "other_line=\"value\""
             ]
         );
+    }
+
+    #[test]
+    fn test_modify_zshrc_appends_functions_once() {
+        let configurator = new_zsh_configurator();
+        let initial = "ZSH_THEME=\"robbyrussell\"\nplugins=(git)\n";
+        let once = configurator.modify_zshrc_content(
+            initial,
+            configurator.theme,
+            configurator.plugins,
+            configurator.env_vars,
+            configurator.functions,
+        );
+        assert!(once.contains(KC_FUNCTION));
+        assert!(once.contains(KC_SET_FUNCTION));
+
+        let twice = configurator.modify_zshrc_content(
+            &once,
+            configurator.theme,
+            configurator.plugins,
+            configurator.env_vars,
+            configurator.functions,
+        );
+        assert_eq!(once, twice);
     }
 }
