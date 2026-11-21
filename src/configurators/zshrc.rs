@@ -87,6 +87,7 @@ impl ZshrcConfigurator {
 
         logger.info(".zshrc configured successfully");
         logger.info(&format!("  - Theme set to: {}", self.theme));
+        logger.info("  - DISABLE_UNTRACKED_FILES_DIRTY=\"true\"");
         logger.info(&format!("  - Plugins: {}", self.plugins.join(", ")));
         for (key, value) in self.env_vars {
             logger.info(&format!("  - Export {}={}", key, value));
@@ -111,6 +112,13 @@ impl ZshrcConfigurator {
 
         // Update or add ZSH_THEME
         self.update_or_add_line(&mut lines, "ZSH_THEME", &format!("ZSH_THEME=\"{}\"", theme));
+
+        // Update or add DISABLE_UNTRACKED_FILES_DIRTY
+        self.update_or_add_line(
+            &mut lines,
+            "DISABLE_UNTRACKED_FILES_DIRTY",
+            "DISABLE_UNTRACKED_FILES_DIRTY=\"true\"",
+        );
 
         // Extend plugins instead of replacing them
         self.extend_plugins(&mut lines, plugins_to_add);
@@ -303,6 +311,7 @@ mod tests {
         );
         assert!(once.contains(KC_FUNCTION));
         assert!(once.contains(KC_SET_FUNCTION));
+        assert!(once.contains("DISABLE_UNTRACKED_FILES_DIRTY=\"true\""));
 
         let twice = configurator.modify_zshrc_content(
             &once,
