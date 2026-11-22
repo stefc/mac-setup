@@ -20,16 +20,19 @@ impl AppDetector for HelixDetector {
                 source: config_dir.join("helix.config.toml"),
                 destination: "~/.config/helix/config.toml",
                 installer_name: "Helix",
+                copy: false,
             },
             SymlinkConfig {
                 source: config_dir.join("helix-theme/warm-burnout-light.toml"),
                 destination: "~/.config/helix/themes/warm-burnout-light.toml",
                 installer_name: "Helix-Warm Burnout",
+                copy: false,
             },
             SymlinkConfig {
                 source: config_dir.join("helix-theme/warm-burnout-dark.toml"),
                 destination: "~/.config/helix/themes/warm-burnout-dark.toml",
                 installer_name: "Helix-Warm Burnout",
+                copy: false,
             },
         ]
     }

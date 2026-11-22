@@ -20,16 +20,19 @@ impl AppDetector for WezTermDetector {
                 source: config_dir.join(".wezterm.lua"),
                 destination: "~/.wezterm.lua",
                 installer_name: "WezTerm",
+                copy: false,
             },
             SymlinkConfig {
                 source: config_dir.join("wezterm-theme/warm-burnout-light.toml"),
                 destination: "~/.config/wezterm/colors/warm-burnout-light.toml",
                 installer_name: "WezTerm-Warm Burnout",
+                copy: false,
             },
             SymlinkConfig {
                 source: config_dir.join("wezterm-theme/warm-burnout-dark.toml"),
                 destination: "~/.config/wezterm/colors/warm-burnout-dark.toml",
                 installer_name: "WezTerm-Warm Burnout",
+                copy: false,
             },
         ]
     }

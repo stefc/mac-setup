@@ -3,6 +3,12 @@ use crate::configurators::Configurator;
 use crate::detectors::{YaziDetector, app_detector::AppDetector};
 use crate::symlinks::SetupResult;
 
+/// Yazi theme packages to install via `ya pkg add`
+const PACKAGES: &[&str] = &[
+    "Chromium-3-Oxide/everforest-medium",
+    "gosxrgxx/flexoki-light",
+];
+
 /// Configurator for Yazi file manager
 pub struct YaziConfigurator;
 
@@ -19,19 +25,16 @@ impl YaziConfigurator {
         }
     }
 
-    /// Configure Yazi by installing the everforest-medium theme package
+    /// Install all missing Yazi theme packages
     fn run_configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
-        let package_name = "Chromium-3-Oxide/everforest-medium";
-
-        // Check if the package is already installed
-        if self.is_package_installed(package_name) {
-            logger.info(&format!("Yazi package already installed: {}", package_name));
-            return Ok(());
+        for package_name in PACKAGES {
+            if self.is_package_installed(package_name) {
+                logger.info(&format!("Yazi package already installed: {}", package_name));
+                continue;
+            }
+            crate::common::run_command("ya", &["pkg", "add", package_name])?;
+            logger.ok_with_highlight("Added Yazi package ->", package_name);
         }
-
-        // Run the command to install the everforest-medium package
-        crate::common::run_command("ya", &["pkg", "add", package_name])?;
-        logger.ok_with_highlight("Added Yazi package ->", package_name);
         Ok(())
     }
 }
@@ -45,9 +48,10 @@ impl Configurator for YaziConfigurator {
         if !self.is_installed() {
             return false;
         }
-        // Only run if required package is missing
-        !self.is_package_installed("Chromium-3-Oxide/everforest-medium")
+        // Only run if any required package is missing
+        PACKAGES.iter().any(|p| !self.is_package_installed(p))
     }
+
     fn configure(&self, logger: &mut dyn Log) -> SetupResult<()> {
         self.run_configure(logger)
     }

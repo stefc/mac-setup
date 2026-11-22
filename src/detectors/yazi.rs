@@ -16,9 +16,10 @@ impl AppDetector for YaziDetector {
 
     fn symlinks(&self, config_dir: &Path) -> Vec<SymlinkConfig> {
         vec![SymlinkConfig {
-            source: config_dir.join("yazi.theme.toml"),
-            destination: "~/.config/yazi/theme.toml",
+            source: config_dir.join("yazi.setting.toml"),
+            destination: "~/.config/yazi/yazi.toml",
             installer_name: self.name(),
+            copy: true,
         }]
     }
 }

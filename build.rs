@@ -52,8 +52,9 @@ fn prepare_assets(target_dir: &Path) -> io::Result<()> {
         ".wezterm.lua",
         "stefc.zsh-theme",
         "code.settings.json",
-        "yazi.theme.toml",
+        "yazi.setting.toml",
         "helix.config.toml",
+        "zed.settings.json",
     ];
 
     const HELIX_ASSETS: &[&str] = &["warm-burnout-dark.toml", "warm-burnout-light.toml"];

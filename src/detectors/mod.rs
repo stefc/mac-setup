@@ -6,6 +6,7 @@ pub mod vscode;
 pub mod wezterm;
 pub mod which;
 pub mod yazi;
+pub mod zed;
 
 pub use app_detector::AppDetector;
 pub use helix::HelixDetector;
@@ -13,3 +14,4 @@ pub use oh_my_zsh::OhMyZshDetector;
 pub use vscode::VSCodeDetector;
 pub use wezterm::WezTermDetector;
 pub use yazi::YaziDetector;
+pub use zed::ZedDetector;

@@ -2,6 +2,7 @@ use crate::{
     common::Log,
     detectors::{
         AppDetector, HelixDetector, OhMyZshDetector, VSCodeDetector, WezTermDetector, YaziDetector,
+        ZedDetector,
     },
     symlinks::{SetupResult, SymlinkConfig},
 };
@@ -16,8 +17,9 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
         .expect("Failed to get executable directory");
     let config_dir = exe_dir.join("config");
 
-    let detectors: [&dyn AppDetector; 5] = [
+    let detectors: [&dyn AppDetector; 6] = [
         &WezTermDetector,
+        &ZedDetector,
         &OhMyZshDetector,
         &VSCodeDetector,
         &YaziDetector,
@@ -36,7 +38,11 @@ pub fn setup_symlinks(logger: &mut dyn Log) -> SetupResult<()> {
                         config.installer_name, e
                     ));
                 } else {
-                    logger.ok_with_highlight("Symlink created successfully", config.destination);
+                    logger.ok_with_highlight(if config.copy {
+                            "File copied successfully"
+                        } else {
+                            "Symlink created successfully"
+                        }, config.destination);
                     affected += 1;
                 }
             }
@@ -67,7 +73,11 @@ fn symlink_create(config: &SymlinkConfig) -> SetupResult<()> {
         fs::remove_file(&dest_expanded)?;
     }
 
-    create_symlink(&config.source, &dest_expanded)?;
+    if config.copy {
+        fs::copy(&config.source, &dest_expanded)?;
+    } else {
+        create_symlink(&config.source, &dest_expanded)?;
+    }
     Ok(())
 }
 

@@ -19,6 +19,7 @@ impl AppDetector for VSCodeDetector {
             source: config_dir.join("code.settings.json"),
             destination: "~/Library/Application Support/Code/User/settings.json",
             installer_name: "Visual Studio Code",
+            copy: false,
         }]
     }
 }

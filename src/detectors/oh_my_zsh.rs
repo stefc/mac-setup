@@ -24,6 +24,7 @@ impl AppDetector for OhMyZshDetector {
             source: config_dir.join("stefc.zsh-theme"),
             destination: "~/.oh-my-zsh/themes/stefc.zsh-theme",
             installer_name: "oh-my-zsh",
+            copy: false,
         }]
     }
 }
